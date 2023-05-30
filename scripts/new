@@ -1,0 +1,99 @@
+#!/bin/bash
+#
+#
+# Creates a new user configuration based on the system default.
+
+#################
+### FUNCTIONS ###
+#################
+
+function print_usage(){
+    printf "\nSets the default services based on the current user configuration. Must be run
+    whenever a services configuration file is updated.
+    
+Usage:
+    ./update -c <command_file> -f <config_file> -S <config_file_symlink> -P <service_path> -p <service_prefix> -u <service_user>
+
+Input Arguments:
+    -f <config_file>            The location where the new config file is to be stored. Defaults to /home/<current-user>/.qcr/ros-service-config.yml
+    -d <default_config_file>    The location to where the default config file. Defaults to /opt/qcr/ros-service-config_default.yml
+    -T <path_to_test>           Runs the script in a test mode by prepending all paths with the provided argument and setting the current user to test. Argument should be the path to the test folder.
+"
+}
+
+
+############
+### MAIN ### 
+############
+
+# Source common components
+source common
+
+# Parse Arguments
+TEST_PATH="0"
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -f|--config_file)
+        CONFIG_FILE="$2"
+        shift
+        shift
+        ;;
+        -d|--default_config_file)
+        DEFAULT_CONFIG_FILE="$2"
+        shift
+        shift
+        ;;
+        -T|--test)
+        TEST_PATH="$2"
+        shift
+        shift
+        ;;
+        -h|--help)
+        print_usage
+        exit 1
+        ;;
+        *)
+        echo "Invalid argument: \"$1\""
+        print_usage
+        exit 1
+    esac
+done
+
+# Testing - prepend paths and set user
+if [ ${TEST_PATH} != "0" ]; then
+    CONFIG_FILE=${TEST_PATH}/home/test/.qcr/ros-service-config.yml
+    DEFAULT_CONFIG_FILE=${TEST_PATH}/${DEFAULT_CONFIG_FILE}
+fi
+
+# Check if config already exists
+if [ -e ${CONFIG_FILE} ]; then
+    printf "${RED}Error${NORMAL} - a configuration file already exists at the specified location (${CONFIG_FILE}. Please delete this file and then re-run this command.\n"
+    exit 1
+fi
+
+
+# Check if default exists
+if [ ! -e ${DEFAULT_CONFIG_FILE} ]; then
+    printf "${YELLOW}No default exists${NORMAL} - creating and copying an empty default configuration."
+
+    touch ${DEFAULT_CONFIG_FILE}
+    echo -e "# Example structure for services configuration file
+- name: service-1
+  description: Service 1 Description
+  parent: ros-watchdog.service
+  command: echo Service 1 Hook
+  enabled: True
+
+- name: service-2
+  description: Service 1 Description
+  parent: ros-watchdog.service
+  command: echo Service 2 Hook
+  enabled: False
+" > ${DEFAULT_CONFIG_FILE}
+
+exit 0
+    
+fi
+
+sudo cp ${DEFAULT_CONFIG_FILE} ${CONFIG_FILE}
+echo -e "Copied configuration into ${CONFIG_FILE}. Make configuration changes to this file and then run update to set this configuration as the default."

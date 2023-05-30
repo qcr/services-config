@@ -1,0 +1,11 @@
+- name: service-1
+  description: Service 1 Description
+  parent: network-online.target
+  command: echo Service 1 Hook
+  enabled: True
+
+- name: service-2
+  description: Service 1 Description
+  parent: network-online.target
+  command: echo Service 2 Hook
+  enabled: False

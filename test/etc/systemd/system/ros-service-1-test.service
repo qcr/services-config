@@ -1,0 +1,14 @@
+[Unit]
+Description=Service 1 Description
+Requires=network-online.target
+After=network-online.target
+
+
+[Service]
+ExecStart=/bin/bash -c "echo Service 1 Hook"
+Restart=always
+RestartSec=5
+
+
+[Install]
+WantedBy=network-online.target

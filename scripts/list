@@ -1,0 +1,74 @@
+#!/bin/bash
+#
+#
+# List the services, whether they are enabled/disabled, and their status
+
+#################
+### FUNCTIONS ###
+#################
+
+function print_usage(){
+    printf "\nLists the services, whether they are enabled/disabled, and their status.
+    
+Usage:
+    ./list -p <service_prefix> -u <service_user>
+
+Input Arguments:
+    -p <service_prefix>     Only list services with the provided prefix. Defaults to 'ros'.
+    -u <service_user>       Only list services that include this user in the suffix. 
+                            Defaults to the current user.
+
+Examples:
+    List all services with the default prefix and user: ./list
+    List all services with the prefix sys and current user: ./list -p sys
+    List all services by the qcr user with the prefix ros: ./list -u qcr
+    List all services, regardless of prefix and user: ./list -p '' -u '' 
+"
+}
+
+
+############
+### MAIN ###
+############
+
+# Source common components
+source common
+
+# Parse Arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -p|--service_prefix)
+        SERVICE_PREFIX="$2"
+        shift
+        shift
+        ;;
+        -u|--service_user)
+        SERVICE_USER="$2"
+        shift
+        shift
+        ;;
+        -h|--help)
+        print_usage
+        exit 1
+        ;;
+        *)
+        echo "Invalid argument: \"$1\""
+        print_usage
+        exit 1
+    esac
+done
+
+# Loop through services printing name, enabled/disabled, and status
+printf "Check full service status via command 'sudo systemctl status <service-name>'\n\n"
+printf "%-40s %-15s %s\n" "SERVICE" "ACTIVE" "STATUS"
+printf "%-40s %-15s %s\n" "-------" "------" "------"
+for f in ${SERVICE_PATH}/${SERVICE_PREFIX}*${SERVICE_USER}.service; do
+    srvname="$(basename $f .service)"
+
+    status=$(sudo systemctl is-active $srvname)
+    case "$status" in
+        ("active") printf "%-40s %-15s %s\n" "$srvname" "Enabled" "${GREEN}Running${NORMAL}" ;;
+        ("failed") printf "%-40s %-15s %s\n" "$srvname" "Enabled" "${RED}Failed${NORMAL}" ;;
+        ("inactive") printf "%-40s %-15s %s\n" "$srvname" "Disabled" "Disabled" ;;
+    esac
+done

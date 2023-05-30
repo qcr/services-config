@@ -1,0 +1,126 @@
+#!/bin/bash
+#
+#
+# Sets the default services to the current user configuration
+
+
+#################
+### FUNCTIONS ###
+#################
+
+function print_usage(){
+    printf "\nSets the default services based on the current user configuration. Must be run
+    whenever a services configuration file is updated.
+    
+Usage:
+    ./update -c <command_file> -f <config_file> -S <config_file_symlink> -P <service_path> -p <service_prefix> -u <service_user>
+
+Input Arguments:
+    -c <command_file>           The file where generated commands should be stored. Defaults to /tmp/ros-service-commands
+    -f <config_file>            The config file to use for service configuration. Defaults to /home/<current-user>/.qcr/ros-service-config.yml
+    -S <config_file_symlink>    The location where a symlink is created to store the currently used configuration file. Defaults to /opt/qcr/ros-service-config.yml
+    -P <service_path>           The path to where systemd service files are stored. Defaults to /etc/systemd/system
+    -p <service_prefix>         The prefix applied to all generated services. Defaults to 'ros'
+    -u <service_user>           The user to be appended to all generated services. Defaults to the current user
+    -T <path_to_test>           Runs the script in a test mode by prepending all paths with the provided argument and setting the user to test. Argument should be the path to the test folder.
+"
+}
+
+
+############
+### MAIN ### 
+############
+
+# Source common components
+source common
+
+# Parse Arguments
+TEST_PATH="0"
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -c|--command_file)
+        COMMAND_FILE="$2"
+        shift
+        shift
+        ;;
+        -f|--config_file)
+        CONFIG_FILE="$2"
+        shift
+        shift
+        ;;
+        -S|--config_file_symlink)
+        CONFIG_FILE_SYMLINK="$2"
+        shift
+        shift
+        ;;
+        -P|--service_path)
+        SERVICE_PATH="$2"
+        shift
+        shift
+        ;;
+        -p|--service_prefix)
+        SERVICE_PREFIX="$2"
+        shift
+        shift
+        ;;
+        -u|--service_user)
+        SERVICE_USER="$2"
+        shift
+        shift
+        ;;
+        -T|--test)
+        TEST_PATH="$2"
+        shift
+        shift
+        ;;
+        -h|--help)
+        print_usage
+        exit 1
+        ;;
+        *)
+        echo "Invalid argument: \"$1\""
+        print_usage
+        exit 1
+    esac
+done
+
+# Testing - prepend paths and set user
+if [ ${TEST_PATH} != "0" ]; then
+    COMMAND_FILE=${TEST_PATH}/${COMMAND_FILE}
+    CONFIG_FILE=${TEST_PATH}/home/test/.qcr/ros-service-config.yml
+    CONFIG_FILE_SYMLINK=${TEST_PATH}/${CONFIG_FILE_SYMLINK}
+    SERVICE_PATH=${TEST_PATH}/${SERVICE_PATH}
+    SERVICE_USER="test"
+fi
+
+# Check to see if configuration file exists
+if [ ! -e ${CONFIG_FILE} ]; then
+    printf "${RED}Error${NORMAL} - the configuration file (${CONFIG_FILE}) does not exit. It is recommended you create a configuration file based on the default config. Use the 'new' command.\n"
+    exit 1
+fi
+
+# Check to see if symlink exists
+if [ -e ${CONFIG_FILE_SYMLINK} ]; then
+
+    # Create list of commands to disable all services for current configuration
+    sudo -E bash -c "python3 create_enable_services_list.py -D -c ${COMMAND_FILE} -f ${CONFIG_FILE_SYMLINK} -p ${SERVICE_PREFIX} -u ${SERVICE_USER}"
+
+    # Run commands - if not testing
+    if [ ${TEST_PATH} == "0" ]; then
+        /bin/bash ${COMMANDS_PATH}
+    fi
+fi
+
+# Set new configuration file
+sudo ln -fs ${CONFIG_FILE} ${CONFIG_FILE_SYMLINK}
+
+# Create new service files for new configuration
+sudo -E bash -c "python3 create_service_files.py -f ${CONFIG_FILE_SYMLINK} -P ${SERVICE_PATH} -p ${SERVICE_PREFIX} -u ${SERVICE_USER}"
+
+# Create list of commands to enable/disable services for current configuration
+sudo -E bash -c "python3 create_enable_services_list.py -c ${COMMAND_FILE} -f ${CONFIG_FILE_SYMLINK} -p ${SERVICE_PREFIX}  -u ${SERVICE_USER}"
+
+# Run commands - if not testing
+if [ ${TEST_PATH} == "0" ]; then
+    /bin/bash ${COMMANDS_PATH}
+fi

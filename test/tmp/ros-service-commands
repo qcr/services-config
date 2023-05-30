@@ -1,0 +1,4 @@
+sudo systemctl enable ros-service-1-test
+sudo systemctl start ros-service-1-test
+sudo systemctl stop ros-service-2-test
+sudo systemctl disable ros-service-2-test
