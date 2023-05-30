@@ -1,0 +1,67 @@
+#!/bin/bash
+#
+#
+# Prints the username of the current configuration used
+
+#################
+### FUNCTIONS ###
+#################
+
+function print_usage(){
+    printf "\nPrints the username of the current configuration used.
+    
+Usage:
+    ./current -T -f
+
+Input Arguments:
+    -f      print the file location of the current configuration file too.
+    -T      Runs the script in a test mode by prepending all paths and setting the current user to test.
+
+"
+}
+
+
+############
+### MAIN ###
+############
+
+# Source common components
+source common
+
+# Parse Arguments
+TESTING=false
+PRINT_CONFIG_FILE_LOC=false
+while getopts fT OPT; do
+    case "${OPT}" in
+        f) PRINT_CONFIG_FILE_LOC=true ;;
+        T) TESTING=true ;;
+        ?) print_usage; exit ;;
+    esac
+done
+
+# Testing - prepend paths and set user
+if [ ${TESTING} == true ]; then
+    # Get path to testing directory
+    TEST_DIR=$(_get_test_dir)
+
+    # Set variables
+    CURRENT_CONFIG=${TEST_DIR}/${CURRENT_CONFIG}
+    
+    printf "${YELLOW}Running script in test mode. Creating test file structure.${NORMAL}\n\n"
+    _create_test_folder_structure ${TEST_DIR}
+fi
+
+# Get filenames of services to list
+count=0
+while read -r line; do
+    if [ ${count} -eq 1  ]; then
+        if [ ${PRINT_CONFIG_FILE_LOC} == true ]; then
+            echo ${line}
+        fi
+    else
+        echo ${line}
+    fi
+    count+=1
+
+done < ${CURRENT_CONFIG}
+

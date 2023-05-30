@@ -8,21 +8,22 @@
 #################
 
 function print_usage(){
-    printf "\nLists the services, whether they are enabled/disabled, and their status.
+    printf "\nLists the common and user specific QCR ROS services for the given user, whether they are enabled/disabled, and their status.
     
 Usage:
-    ./list -p <service_prefix> -u <service_user>
+    ./list -u <service_user> -i -a -d
 
 Input Arguments:
-    -p <service_prefix>     Only list services with the provided prefix. Defaults to 'ros'.
-    -u <service_user>       Only list services that include this user in the suffix. 
-                            Defaults to the current user.
+    -u <user>   The user services to list. Defaults to the current user.
+    -i          Ignore the common QCR services.
+    -a          List all system services.
+    -d          List disabled services. 
 
 Examples:
-    List all services with the default prefix and user: ./list
-    List all services with the prefix sys and current user: ./list -p sys
-    List all services by the qcr user with the prefix ros: ./list -u qcr
-    List all services, regardless of prefix and user: ./list -p '' -u '' 
+    List all generic and user sepcific services for the current user: ./list
+    List all generic and user sepcific services for the current user: ./list -q sys
+    List all only the user sepcific services for the current user: ./list -i
+    List all system services: ./list -a 
 "
 }
 
@@ -35,40 +36,57 @@ Examples:
 source common
 
 # Parse Arguments
-while [[ $# -gt 0 ]]; do
-    case $1 in
-        -p|--service_prefix)
-        SERVICE_PREFIX="$2"
-        shift
-        shift
-        ;;
-        -u|--service_user)
-        SERVICE_USER="$2"
-        shift
-        shift
-        ;;
-        -h|--help)
-        print_usage
-        exit 1
-        ;;
-        *)
-        echo "Invalid argument: \"$1\""
-        print_usage
-        exit 1
+IGN_COMMON_ROS_SRVS=false
+LIST_ALL_SRVS=false
+LIST_DISABLED_SRVS=false
+while getopts u:iadh OPT; do
+    case "${OPT}" in
+        u) SERVICE_USER=${OPTARG} ;;
+        i) IGN_COMMON_ROS_SRVS=true ;;
+        a) LIST_ALL_SRVS=true ;;
+        d) LIST_DISABLED_SRVS=true ;;
+        ?) print_usage; exit ;;
     esac
 done
+
+# Get filenames of services to list
+if [ ${LIST_ALL_SRVS} == true ]; then
+    # Get all service files
+    SERVICE_FILES=${SERVICE_PATH}/*.service
+else
+    # Get only service files with user at the end of the filename
+    SERVICE_FILES=${SERVICE_PATH}/*${SERVICE_USER}.service
+    
+    # Prepend common QCR ROS services to array if required
+    COMMON_ROS_SRVS=("${SERVICE_PATH}/ros.service" "${SERVICE_PATH}/roscore.service" "${SERVICE_PATH}/ros-watchdog.service" "${SERVICE_PATH}/robot-bringup.service" "${SERVICE_PATH}/qut-iaclient.service")
+    if [ ${IGN_COMMON_ROS_SRVS} == false ]; then
+        SERVICE_FILES=( "${COMMON_ROS_SRVS[@]}" "${SERVICE_FILES[@]}" )
+    fi
+fi
 
 # Loop through services printing name, enabled/disabled, and status
 printf "Check full service status via command 'sudo systemctl status <service-name>'\n\n"
 printf "%-40s %-15s %s\n" "SERVICE" "ACTIVE" "STATUS"
 printf "%-40s %-15s %s\n" "-------" "------" "------"
-for f in ${SERVICE_PATH}/${SERVICE_PREFIX}*${SERVICE_USER}.service; do
-    srvname="$(basename $f .service)"
 
-    status=$(sudo systemctl is-active $srvname)
+# List services
+for f in ${SERVICE_FILES[@]}; do
+    # Check service exists
+    if [ ! -e ${f} ]; then
+        continue
+    fi
+
+    # Get service name, status, then print
+    srvname="$(basename $f .service)"
+    status=$(systemctl is-active $srvname)
     case "$status" in
+        ("activating") printf "%-40s %-15s %s\n" "$srvname" "Enabled" "${YELLOW}Activating${NORMAL}" ;;
         ("active") printf "%-40s %-15s %s\n" "$srvname" "Enabled" "${GREEN}Running${NORMAL}" ;;
         ("failed") printf "%-40s %-15s %s\n" "$srvname" "Enabled" "${RED}Failed${NORMAL}" ;;
-        ("inactive") printf "%-40s %-15s %s\n" "$srvname" "Disabled" "Disabled" ;;
+        ("inactive") 
+            if [ ${LIST_DISABLED_SRVS} == true ]; then  
+                printf "%-40s %-15s %s\n" "$srvname" "Disabled" "Disabled"
+            fi ;;
     esac
 done
+

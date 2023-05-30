@@ -8,16 +8,15 @@
 #################
 
 function print_usage(){
-    printf "\nSets the default services based on the current user configuration. Must be run
-    whenever a services configuration file is updated.
+    printf "\nCopies the default service configuration to the current user workspace.
     
 Usage:
-    ./update -c <command_file> -f <config_file> -S <config_file_symlink> -P <service_path> -p <service_prefix> -u <service_user>
+    ./new -T -f <config_file> -d <default_config_file>
 
 Input Arguments:
     -f <config_file>            The location where the new config file is to be stored. Defaults to /home/<current-user>/.qcr/ros-service-config.yml
-    -d <default_config_file>    The location to where the default config file. Defaults to /opt/qcr/ros-service-config_default.yml
-    -T <path_to_test>           Runs the script in a test mode by prepending all paths with the provided argument and setting the current user to test. Argument should be the path to the test folder.
+    -d <default_config_file>    The location to where the default config file. Defaults to /etc/qcr/ros-service-config_default.yml
+    -T                          Runs the script in a test mode by prepending all paths and setting the current user to test.
 "
 }
 
@@ -30,70 +29,71 @@ Input Arguments:
 source common
 
 # Parse Arguments
-TEST_PATH="0"
-while [[ $# -gt 0 ]]; do
-    case $1 in
-        -f|--config_file)
-        CONFIG_FILE="$2"
-        shift
-        shift
-        ;;
-        -d|--default_config_file)
-        DEFAULT_CONFIG_FILE="$2"
-        shift
-        shift
-        ;;
-        -T|--test)
-        TEST_PATH="$2"
-        shift
-        shift
-        ;;
-        -h|--help)
-        print_usage
-        exit 1
-        ;;
-        *)
-        echo "Invalid argument: \"$1\""
-        print_usage
-        exit 1
+TESTING=false
+
+while getopts f:dT OPT; do
+    case "${OPT}" in
+        f) CONFIG_FILE=${OPTARG} ;;
+        d) DEFAULT_CONFIG_FILE=${OPTARG} ;;
+        T) TESTING=true ;;
+        ?) print_usage; exit ;;
     esac
 done
 
 # Testing - prepend paths and set user
-if [ ${TEST_PATH} != "0" ]; then
-    CONFIG_FILE=${TEST_PATH}/home/test/.qcr/ros-service-config.yml
-    DEFAULT_CONFIG_FILE=${TEST_PATH}/${DEFAULT_CONFIG_FILE}
+if [ ${TESTING} == true ]; then
+    # Get path to testing directory
+    TEST_DIR=$(_get_test_dir)
+
+    # Set variables
+    CONFIG_FILE=${TEST_DIR}/home/test/.qcr/service-config.yml
+    DEFAULT_CONFIG_FILE=${TEST_DIR}/${DEFAULT_CONFIG_FILE}
+
+    printf "${YELLOW}Running script in test mode. Creating test file structure.${NORMAL}\n\n"
+    _create_test_folder_structure ${TEST_DIR}
+fi
+
+
+# Check directory exists
+config_dir=$(dirname ${CONFIG_FILE})
+if [ ! -d ${config_dir} ]; then
+    echo "Creating directory ${config_dir}"
+    mkdir -p "${config_dir}"
 fi
 
 # Check if config already exists
 if [ -e ${CONFIG_FILE} ]; then
-    printf "${RED}Error${NORMAL} - a configuration file already exists at the specified location (${CONFIG_FILE}. Please delete this file and then re-run this command.\n"
+    printf "${RED}User Configuration File Already Exists${NORMAL} - ${CONFIG_FILE}.\n"
+    printf "Please delete this file and then re-run this command.\n"
     exit 1
 fi
 
-
 # Check if default exists
 if [ ! -e ${DEFAULT_CONFIG_FILE} ]; then
-    printf "${YELLOW}No default exists${NORMAL} - creating and copying an empty default configuration."
+    printf "${YELLOW}No Default Configuration Exists${NORMAL} - creating empty default configuration.\n"
 
     touch ${DEFAULT_CONFIG_FILE}
     echo -e "# Example structure for services configuration file
 - name: service-1
   description: Service 1 Description
+  catkin_ws: /opt/ros/noetic/setup.bash
   parent: ros-watchdog.service
   command: echo Service 1 Hook
   enabled: True
+  restart: True
+  restart_after: 5
 
 - name: service-2
   description: Service 1 Description
   parent: ros-watchdog.service
   command: echo Service 2 Hook
   enabled: False
-" > ${DEFAULT_CONFIG_FILE}
 
-exit 0
+
+" > ${DEFAULT_CONFIG_FILE}
     
 fi
 
-sudo cp ${DEFAULT_CONFIG_FILE} ${CONFIG_FILE}
-echo -e "Copied configuration into ${CONFIG_FILE}. Make configuration changes to this file and then run update to set this configuration as the default."
+cp ${DEFAULT_CONFIG_FILE} ${CONFIG_FILE}
+printf "Copied Default Configuration - User configuration file at ${CONFIG_FILE}\n"
+printf  "Make changes to this file and then run update to set this as the default service configuration.\n"

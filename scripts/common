@@ -12,36 +12,38 @@
 # it is much easier to handle YAML files within Python. Changing the default is 
 # useful for testing.
 # Default: /tmp/ros-service-commands
-COMMAND_FILE="/tmp/ros-service-commands"
+COMMAND_FILE="/tmp/service-commands"
 
 # CONFIG_FILE - full path to a configuration file. The default path is based on the 
 # current user. Changing the default is  useful for testing.
 # Default: /home/<current-user>/.qcr/ros-service-config.yml
-CONFIG_FILE="home/$USER/.qcr/ros-service-config.yml"
+CONFIG_FILE="/home/$USER/.qcr/service-config.yml"
 
 # CONFIG_FILE_SYMLINK - the location of the symbolic link. The symbolic link
 # points to the current configuration file in use. Changing the default is 
 # useful for testing.
 # Default: /opt/qcr/ros-service-config.yml
-CONFIG_FILE_SYMLINK="/opt/qcr/ros-service-config.yml"
+CONFIG_FILE_SYMLINK="/etc/qcr/service-config.yml"
+
+# CURRENT_CONFIG - a text file storing the current user and config file location.
+# Changing the default is useful for testing.
+# Default: /opt/qcr/current-service-config-values
+CURRENT_CONFIG="/etc/qcr/current-service-config-values"
 
 # DEFAULT_CONFIG_FILE - the location of the default config file. Changing the default
 # is useful for testing.
 # Default: /opt/qcr/ros-service-config_default.yml
-DEFAULT_CONFIG_FILE="/opt/qcr/ros-service-config_default.yml"
+DEFAULT_CONFIG_FILE="/etc/qcr/service-config_default.yml"
 
 # SERVICE_PATH - contains the path to where systemd service files are stored.
 # Changing the default is useful for testing.
 # Default: /etc/systemd/system/.
 SERVICE_PATH="/etc/systemd/system/"
 
-# SERVICE_PREFIX - contains a string prefixed to the generated service files.
-# Default: ros
-SERVICE_PREFIX="ros"
-
 # SERVICE_USER - contains a string appended to the generated service files prior to the '.service' file extension.
 # Default: current user
 SERVICE_USER=$USER
+
 
 
 # Screen Colour Helpers
@@ -54,3 +56,21 @@ NORMAL=$(tput sgr0)
 #################
 ### FUNCTIONS ###
 #################
+
+function _create_test_folder_structure() {
+
+    mkdir -p "${1}/home/test/.qcr"
+    mkdir -p "${1}/etc/qcr/"
+    mkdir -p "${1}/etc/systemd/system/"
+    mkdir -p "${1}/tmp/"
+}
+
+function _get_script_dr() {
+    # Usage: SCRIPT_DIR=$(_get_script_dir)
+    echo "$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+}
+
+function _get_test_dir() {
+    # Usage: TEST_DIR=$(_get_test_dir)
+    echo $(dirname $(_get_script_dr))/test
+}
