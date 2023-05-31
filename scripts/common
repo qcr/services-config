@@ -44,14 +44,15 @@ SERVICE_PATH="/etc/systemd/system/"
 # Default: current user
 SERVICE_USER=$USER
 
-
-
 # Screen Colour Helpers
 RED=$(tput setaf 1)
 GREEN=$(tput setaf 2)
 YELLOW=$(tput setaf 3)
 NORMAL=$(tput sgr0)
 
+ERROR="${RED}[ERROR]${NORMAL}"
+WARNING="${YELLOW}[WARNING]${NORMAL}"
+INFO="${GREEN}[INFO]${NORMAL}"
 
 #################
 ### FUNCTIONS ###

@@ -4,6 +4,12 @@
 # Creates a new user configuration based on the system default.
 
 #################
+### VARIABLES ###
+#################
+
+SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
+#################
 ### FUNCTIONS ###
 #################
 
@@ -26,16 +32,17 @@ Input Arguments:
 ############
 
 # Source common components
-source common
+source ${SCRIPT_DIR}/common
 
 # Parse Arguments
 TESTING=false
 
-while getopts f:dT OPT; do
+while getopts f:dTh OPT; do
     case "${OPT}" in
         f) CONFIG_FILE=${OPTARG} ;;
         d) DEFAULT_CONFIG_FILE=${OPTARG} ;;
         T) TESTING=true ;;
+        h) print_usage; exit ;;
         ?) print_usage; exit ;;
     esac
 done
@@ -57,20 +64,20 @@ fi
 # Check directory exists
 config_dir=$(dirname ${CONFIG_FILE})
 if [ ! -d ${config_dir} ]; then
-    echo "Creating directory ${config_dir}"
+    echo "${INFO} Creating directory ${config_dir}"
     mkdir -p "${config_dir}"
 fi
 
 # Check if config already exists
 if [ -e ${CONFIG_FILE} ]; then
-    printf "${RED}User Configuration File Already Exists${NORMAL} - ${CONFIG_FILE}.\n"
+    printf "${ERROR} User Configuration File Already Exists at ${CONFIG_FILE}.\n"
     printf "Please delete this file and then re-run this command.\n"
     exit 1
 fi
 
 # Check if default exists
 if [ ! -e ${DEFAULT_CONFIG_FILE} ]; then
-    printf "${YELLOW}No Default Configuration Exists${NORMAL} - creating empty default configuration.\n"
+    printf "${INFO} No Default Configuration Exists, creating empty default configuration.\n"
 
     touch ${DEFAULT_CONFIG_FILE}
     echo -e "# Example structure for services configuration file
@@ -95,5 +102,5 @@ if [ ! -e ${DEFAULT_CONFIG_FILE} ]; then
 fi
 
 cp ${DEFAULT_CONFIG_FILE} ${CONFIG_FILE}
-printf "Copied Default Configuration - User configuration file at ${CONFIG_FILE}\n"
-printf  "Make changes to this file and then run update to set this as the default service configuration.\n"
+printf "${INFO} Copied Default Configuration - User configuration file at ${CONFIG_FILE}\n"
+printf  "${INFO} Make changes to this file and then run update to set this as the default service configuration.\n"

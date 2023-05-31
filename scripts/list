@@ -4,6 +4,12 @@
 # List the services, whether they are enabled/disabled, and their status
 
 #################
+### VARIABLES ###
+#################
+
+SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
+#################
 ### FUNCTIONS ###
 #################
 
@@ -33,7 +39,7 @@ Examples:
 ############
 
 # Source common components
-source common
+source ${SCRIPT_DIR}/common
 
 # Parse Arguments
 IGN_COMMON_ROS_SRVS=false
@@ -45,6 +51,7 @@ while getopts u:iadh OPT; do
         i) IGN_COMMON_ROS_SRVS=true ;;
         a) LIST_ALL_SRVS=true ;;
         d) LIST_DISABLED_SRVS=true ;;
+        h) print_usage; exit ;;
         ?) print_usage; exit ;;
     esac
 done

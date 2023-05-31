@@ -21,7 +21,7 @@ if __name__ == "__main__":
     # Arguments
     parser = argparse.ArgumentParser(description="Generates service files based on a configuration yaml file.")
     parser.add_argument('-f', '--config_file', type=str, help="the path to the services configuration yaml file. Defaults to '/etc/qcr/services-config.yml'", default=CONFIG_FILE)
-    parser.add_argument('-P', '--service_path', type=str, help="the path to where system services are located. Defaults to '/etc/systemd/system/'", default=SERVICES_PATH)
+    parser.add_argument('-p', '--service_path', type=str, help="the path to where system services are located. Defaults to '/etc/systemd/system/'", default=SERVICES_PATH)
     parser.add_argument('-u', '--service_user', type=str, help="the service user which is applied as a suffix to generated service files.")
 
     args = parser.parse_args()
