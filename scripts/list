@@ -72,7 +72,7 @@ else
 fi
 
 # Loop through services printing name, enabled/disabled, and status
-printf "Check full service status via command 'sudo systemctl status <service-name>'\n\n"
+printf "Check full service status via command 'systemctl status <service-name>'\n\n"
 printf "%-40s %-15s %s\n" "SERVICE" "ACTIVE" "STATUS"
 printf "%-40s %-15s %s\n" "-------" "------" "------"
 
