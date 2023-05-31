@@ -1,6 +1,6 @@
 # Services Tool
 
-The QCR Services tool is designed to allow users to easily manage custom start-up behaviour for a system. It has primarily been aimed at creating and managing custom ROS services however, it could be utilised for non-ROS services. It can be used on both single and multi-user machines. The tool utilises [Systemd Services](https://www.freedesktop.org/software/systemd/man/systemd.service.html) under the hood. 
+The QCR Services tool is designed to allow users to easily manage custom start-up behaviour for a system. It has primarily been aimed at creating and managing custom ROS services on robot machines however, it could be utilised for non-ROS services. It can be used on both single and multi-user machines. The tool utilises [Systemd Services](https://www.freedesktop.org/software/systemd/man/systemd.service.html) under the hood. 
 
 ## Usage
 
@@ -18,8 +18,10 @@ Usage: `services <command> <arguments>`
 Your custom start-up process revolves around a services configuration file. This is a YAML file and its default location is `/home/<your-username>/.qcr/services-config.yml`. The process to create a custom start-up behaviour is:
 
 1. Run `services new` - this will generate a new service configuration file in the default location by copying the system's default start-up configuration (created by the system administrator).
-2. Make the desired changes to your newly created service config file.
+2. Make the desired changes to your newly created service config file. 
 3. Once you're happy run `service update` - this will establish create and update system service files, and enable/disable all appropriate services.
+
+We recommend you utilise this tool in combination with the [QCR ROS-Daemons](https://github.com/qcr/ros-daemons) and set the parent to be one of the ROS meta services: *ros-sensors.service*; *ros-robot.service*; *ros-project.service*.
 
 **Notes**:
 
