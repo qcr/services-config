@@ -17,7 +17,7 @@ function print_usage(){
     printf "\nCopies the default service configuration to the current user workspace.
     
 Usage:
-    ./new -T -f <config_file> -d <default_config_file>
+    new -T -f <config_file> -d <default_config_file>
 
 Input Arguments:
     -f <config_file>            The location where the new config file is to be stored. Defaults to /home/<current-user>/.qcr/ros-service-config.yml

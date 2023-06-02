@@ -19,7 +19,7 @@ function print_usage(){
     whenever a services configuration file is updated.
     
 Usage:
-    ./update -T -c <command_file> -f <config_file> -s <config_file_symlink> -p <service_path> -u <service_user>
+    update -T -c <command_file> -f <config_file> -s <config_file_symlink> -p <service_path> -u <service_user>
 
 Input Arguments:
     -c <command_file>           The file where generated commands should be stored. Defaults to /tmp/ros-service-commands

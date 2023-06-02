@@ -17,7 +17,7 @@ function print_usage(){
     printf "\nLists the common and user specific QCR ROS services for the given user, whether they are enabled/disabled, and their status.
     
 Usage:
-    ./list -u <service_user> -i -a -d
+    list -u <service_user> -i -a -d
 
 Input Arguments:
     -u <user>   The user services to list. Defaults to the current user.

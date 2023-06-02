@@ -17,7 +17,7 @@ function print_usage(){
     printf "\nPrints the username of the current configuration used.
     
 Usage:
-    ./current -T -f
+    current -T -f
 
 Input Arguments:
     -f      print the file location of the current configuration file too.

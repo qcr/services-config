@@ -38,9 +38,9 @@ function print_usage(){
     printf "\nRuns the QCR Services tool.
     
 Usage:
-    ./services <command> <arguments>
+    services <command> <arguments>
 
-Input Arguments:
+Arguments:
     <command>       the QCR service command to run.
     <arguments>     the arguments for the QCR service command.
 
@@ -67,25 +67,6 @@ if [ $# -eq 0 ]; then # || ([ $# -eq 1 ] && [ ${USE_LOCAL_VERSION} == true ]); t
     exit
 fi
 
-# # Turn arguments into array, and remove first -L if argument was present
-# #   > getopts only passes up to first non-optional command
-# #   > for example, if call 'services -L list -F' getopts would only
-# #   > parse the -L and ignore everything after list
-# ARGS=( "$@" )
-# if [ ${USE_LOCAL_VERSION} == true ]; then
-#     ARGS=( "${ARGS[@]:1}" )
-# fi
-
-# # Check to see if -L flag present in remaining arguments
-# # TODO - probably a better way of searching for this
-# for i in ${ARGS[@]}; do
-#     # Check if contains L flag
-#     if [[ "$i" =~ "L" ]] && [[ $i =~ "-" ]]; then
-#         printf "${ERROR} if attempting to run the local version, the -L flag must come directly after 'services'.\n"
-#         print_usage
-#         exit
-#     fi
-# done
 
 # Check command argument is valid
 ARGS=( "$@" )
@@ -108,5 +89,4 @@ else
 fi
 
 # Run tool
-echo "${SCRIPT_DIR}/scripts/${CMD} ${ARGS_LIST[@]}"
-# /bin/bash ${SCRIPT_DIR}/scripts/${CMD}${ARGS_LIST[@]}
+/bin/bash ${SCRIPT_DIR}/scripts/${CMD}${ARGS_LIST[@]}
