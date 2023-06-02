@@ -10,22 +10,21 @@
 ### VARIABLES ###
 #################
 
+
+# Directory for this script
+SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
 # Valid commands should be the file name of valid scripts to call
 # held within the scripts folder
-VALID_CMDS=("current" "list" "new" "update")
-
-INSTALL_DIR="/var/tmp/tools/"
-REPO_DIR="${INSTALL_DIR}/services"
-REPO_URL="https://github.com/qcr/services"
+VALID_CMDS=("current-user" "list" "new" "update")
 
 # Screen Colour Helpers
-# Can't import common script as this script must be standalone
-# due to how the qcr tool operates
 RED=$(tput setaf 1)
 GREEN=$(tput setaf 2)
 YELLOW=$(tput setaf 3)
 NORMAL=$(tput sgr0)
 
+# Helper variables
 ERROR="${RED}[ERROR]${NORMAL}"
 WARNING="${YELLOW}[WARNING]${NORMAL}"
 INFO="${GREEN}[INFO]${NORMAL}"
@@ -39,12 +38,11 @@ function print_usage(){
     printf "\nRuns the QCR Services tool.
     
 Usage:
-    ./services -L <command> <arguments>
+    ./services <command> <arguments>
 
 Input Arguments:
     <command>       the QCR service command to run.
     <arguments>     the arguments for the QCR service command.
-    -L              use local version of services tool
 
 "
 }
@@ -56,78 +54,59 @@ Input Arguments:
 
 # Parse arguments
 USE_LOCAL_VERSION=false
-while getopts Lh OPT; do
+while getopts h OPT; do
     case "${OPT}" in
-        L) USE_LOCAL_VERSION=true ;;
-        h) print_usage; exit ;;
+        h|help) print_usage; exit ;;
         ?) print_usage; exit ;;
     esac
 done
 
-# echo "Use Local Version: ${USE_LOCAL_VERSION}"
-
 # Valid number of arguments
-if [ $# -eq 0 ] || [ $# -eq 1 ] && [ ${USE_LOCAL_VERSION} == true ]; then
+if [ $# -eq 0 ]; then # || ([ $# -eq 1 ] && [ ${USE_LOCAL_VERSION} == true ]); then
     print_usage
     exit
 fi
 
-# Turn arguments into array, and remove first -L if present
-ARGS=( "$@" )
-if [ ${USE_LOCAL_VERSION} == true ]; then
-    ARGS=( "${ARGS[@]:1}" )
-fi
+# # Turn arguments into array, and remove first -L if argument was present
+# #   > getopts only passes up to first non-optional command
+# #   > for example, if call 'services -L list -F' getopts would only
+# #   > parse the -L and ignore everything after list
+# ARGS=( "$@" )
+# if [ ${USE_LOCAL_VERSION} == true ]; then
+#     ARGS=( "${ARGS[@]:1}" )
+# fi
+
+# # Check to see if -L flag present in remaining arguments
+# # TODO - probably a better way of searching for this
+# for i in ${ARGS[@]}; do
+#     # Check if contains L flag
+#     if [[ "$i" =~ "L" ]] && [[ $i =~ "-" ]]; then
+#         printf "${ERROR} if attempting to run the local version, the -L flag must come directly after 'services'.\n"
+#         print_usage
+#         exit
+#     fi
+# done
 
 # Check command argument is valid
-# echo "Args: ${ARGS[@]}"
+ARGS=( "$@" )
 CMD=${ARGS[0]}
-# echo "Command: ${CMD}"
-# exit
 if [[ ! " ${VALID_CMDS[*]} " =~ " ${CMD} "  ]]; then
-    printf "${ERROR} - the command ${YELLOW}${CMD}${NORMAL} does not exist.\n"
+    printf "${ERROR} the command ${YELLOW}${CMD}${NORMAL} does not exist.\n"
     print_usage
+    exit
 fi
 
+# Get sub-script and arguments
+CMD=${ARGS[0]}
+ARGS_LIST=${ARGS[@]:1}
 
-# Run script with arguments
-CMD=${ARGS[@]}
-# echo "CMD: ${CMD}"
-if [ ${USE_LOCAL_VERSION} == true ]; then
-    # Use local version
-    /bin/bash scripts/${CMD}
+# Print to terminal what is being called
+if [ ${#ARGS_LIST[@]} == 1 ] && [ "${ARGS_LIST[0]}" == "" ]; then
+    printf "${INFO} calling '${YELLOW}services ${CMD}${NORMAL}' with no arguments\n"
 else
-    # Install/cache git version, look to see if there are updates
-
-    # Bail if git isn't found
-    command -v git >& /dev/null || {
-        printf "${ERROR} - the 'git' command was not found, please install\n"
-        exit 1
-    }
-
-    # Create repo if doesn't exist
-    if [ ! -d "$REPO_DIR" ]; then
-        printf "${INFO} - No cached version of the services tool found. Installing to '$REPO_DIR'...\n"
-        if ! git clone "$REPO_URL" "$REPO_DIR"; then
-            printf "${ERROR} - Install failed, please ensure machine has Internet access.\n"
-            exit 1
-        fi
-    fi
-    printf "\n"
-
-    # Check whether installed version is the latest (flagging if there are updates
-    # available, or update check failed)
-    latest="$(git -C "${REPO_DIR}" ls-remote 2>/dev/null | grep HEAD | cut -f 1 || true)"
-    installed="$(git -C "$REPO_DIR" rev-parse HEAD)"
-    if [ -z "$latest" ]; then
-        printf "${WARNING} - check for latest tools failed; using cached version in '$REPO_DIR'.\n"
-    elif [ "$latest" != "$installed" ]; then
-        printf "${WARNING}${YELLOW} - %s\n\t    %s\t%s\n\n${NORMAL}" \
-        "Old version (${installed:0:8}) found in '$REPO_DIR'." \
-        "Update to latest (${latest:0:8}) using:" \
-        "qcr update services"
-    fi
-
-    # Run tool
-    /bin/bash ${REPO_DIR}/scripts/${CMD}
+    printf "${INFO} calling '${YELLOW}services ${CMD}${NORMAL}' with arguments '${YELLOW}${ARGS[@]:1}${NORMAL}'\n"
 fi
 
+# Run tool
+echo "${SCRIPT_DIR}/scripts/${CMD} ${ARGS_LIST[@]}"
+# /bin/bash ${SCRIPT_DIR}/scripts/${CMD}${ARGS_LIST[@]}
