@@ -25,9 +25,9 @@ YELLOW=$(tput setaf 3)
 NORMAL=$(tput sgr0)
 
 # Helper variables
-ERROR="${RED}[ERROR]${NORMAL}"
-WARNING="${YELLOW}[WARNING]${NORMAL}"
-INFO="${GREEN}[INFO]${NORMAL}"
+ERROR="${RED}[ERROR] ${NORMAL}"
+WARNING="${YELLOW}[WARNING] ${NORMAL}"
+INFO="${GREEN}[INFO] ${NORMAL}"
 
 
 #################
@@ -43,6 +43,12 @@ Usage:
 Arguments:
     <command>       the QCR service command to run.
     <arguments>     the arguments for the QCR service command.
+
+Commands:
+    > list
+    > new
+    > update
+    > current-user
 
 "
 }
@@ -72,7 +78,7 @@ fi
 ARGS=( "$@" )
 CMD=${ARGS[0]}
 if [[ ! " ${VALID_CMDS[*]} " =~ " ${CMD} "  ]]; then
-    printf "${ERROR} the command ${YELLOW}${CMD}${NORMAL} does not exist.\n"
+    printf "${ERROR}The command ${YELLOW}${CMD}${NORMAL} does not exist.\n"
     print_usage
     exit
 fi
@@ -83,10 +89,10 @@ ARGS_LIST=${ARGS[@]:1}
 
 # Print to terminal what is being called
 if [ ${#ARGS_LIST[@]} == 1 ] && [ "${ARGS_LIST[0]}" == "" ]; then
-    printf "${INFO} calling '${YELLOW}services ${CMD}${NORMAL}' with no arguments\n"
+    printf "${INFO}Calling '${YELLOW}${SCRIPT_DIR}/scripts/${CMD}${NORMAL}' with no arguments\n"
 else
-    printf "${INFO} calling '${YELLOW}services ${CMD}${NORMAL}' with arguments '${YELLOW}${ARGS[@]:1}${NORMAL}'\n"
+    printf "${INFO}Calling '${YELLOW}${SCRIPT_DIR}/scripts/${CMD}${NORMAL}' with arguments '${YELLOW}${ARGS[@]:1}${NORMAL}'\n"
 fi
 
 # Run tool
-/bin/bash ${SCRIPT_DIR}/scripts/${CMD}${ARGS_LIST[@]}
+/bin/bash ${SCRIPT_DIR}/scripts/${CMD} ${ARGS_LIST[@]}
