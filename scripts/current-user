@@ -73,7 +73,7 @@ fi
 # Check if file exists
 if [ ! -e ${CURRENT_CONFIG} ]; then
     echo "${WARNING} User Not Set"
-    exit
+    exit 0
 fi
 
 # Get filenames of services to list

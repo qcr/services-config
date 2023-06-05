@@ -88,7 +88,7 @@ done
 # Valid number of sub arguments
 if [ ${#SUB_ARGS[@]} -eq 0 ]; then
     print_usage
-    exit
+    exit 1
 fi
 
 # Check command argument is valid
@@ -97,7 +97,7 @@ CMD=${SUB_ARGS[0]}
 if [[ ! " ${VALID_CMDS[*]} " =~ " ${CMD} "  ]]; then
     printf "${ERROR}The command ${YELLOW}${CMD}${RESET} does not exist.\n"
     print_usage
-    exit
+    exit 1
 fi
 
 # Get sub-script arguments
