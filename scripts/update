@@ -94,7 +94,7 @@ if [ ${TESTING} == true ]; then
     CURRENT_CONFIG=${TEST_DIR}/${CURRENT_CONFIG}
     SERVICE_PATH=${TEST_DIR}/${SERVICE_PATH}   
 
-    printf "${YELLOW}Running script in test mode. Creating test file structure.${NORMAL}\n\n"
+    printf "${YELLOW}Running script in test mode. Creating test file structure.${RESET}\n\n"
     _create_test_folder_structure ${TEST_DIR}
 fi
 

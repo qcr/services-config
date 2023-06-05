@@ -87,9 +87,9 @@ for f in ${SERVICE_FILES[@]}; do
     srvname="$(basename $f .service)"
     status=$(systemctl is-active $srvname)
     case "$status" in
-        ("activating") printf "%-40s %-15s %s\n" "$srvname" "Enabled" "${YELLOW}Activating${NORMAL}" ;;
-        ("active") printf "%-40s %-15s %s\n" "$srvname" "Enabled" "${GREEN}Running${NORMAL}" ;;
-        ("failed") printf "%-40s %-15s %s\n" "$srvname" "Enabled" "${RED}Failed${NORMAL}" ;;
+        ("activating") printf "%-40s %-15s ${YELLOW}%s${RESET}\n" "$srvname" "Enabled" "Activating" ;;
+        ("active") printf "%-40s %-15s ${GREEN}%s${RESET}\n" "$srvname" "Enabled" "Running" ;;
+        ("failed") printf "%-40s %-15s ${RED}%s${RESET}\n" "$srvname" "Enabled" "Failed" ;;
         ("inactive") 
             if [ ${LIST_DISABLED_SRVS} == true ]; then  
                 printf "%-40s %-15s %s\n" "$srvname" "Disabled" "Disabled"

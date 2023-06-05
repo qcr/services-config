@@ -10,24 +10,8 @@
 ### VARIABLES ###
 #################
 
-
 # Directory for this script
 SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-
-# Valid commands should be the file name of valid scripts to call
-# held within the scripts folder
-VALID_CMDS=("current-user" "list" "new" "update")
-
-# Screen Colour Helpers
-RED=$(tput setaf 1)
-GREEN=$(tput setaf 2)
-YELLOW=$(tput setaf 3)
-NORMAL=$(tput sgr0)
-
-# Helper variables
-ERROR="${RED}[ERROR] ${NORMAL}"
-WARNING="${YELLOW}[WARNING] ${NORMAL}"
-INFO="${GREEN}[INFO] ${NORMAL}"
 
 
 #################
@@ -45,12 +29,18 @@ Arguments:
     <arguments>     the arguments for the QCR service command.
 
 Commands:
-    > list
-    > new
-    > update
-    > current-user
+" 
 
-"
+    CMDS="$(get_commands)"
+    for i in ${CMDS[@]}; do
+        printf "    > $i\n"
+    done
+
+}
+
+function get_commands(){
+    CMDS=($(find "${SCRIPT_DIR}/scripts" -mindepth 1 -maxdepth 1 -executable -type f -not -name '*.py' -exec basename {} \;))
+    echo "${CMDS[@]}"
 }
 
 
@@ -58,8 +48,17 @@ Commands:
 ### MAIN ###
 ############
 
+# Source Common
+source ${SCRIPT_DIR}/scripts/common
+
+# Display heading
+display_heading "SERVICES TOOL"
+
+
+# Valid commands
+VALID_CMDS="$(get_commands)"
+
 # Parse arguments
-USE_LOCAL_VERSION=false
 while getopts h OPT; do
     case "${OPT}" in
         h|help) print_usage; exit ;;
@@ -68,7 +67,7 @@ while getopts h OPT; do
 done
 
 # Valid number of arguments
-if [ $# -eq 0 ]; then # || ([ $# -eq 1 ] && [ ${USE_LOCAL_VERSION} == true ]); then
+if [ $# -eq 0 ]; then
     print_usage
     exit
 fi
@@ -78,7 +77,7 @@ fi
 ARGS=( "$@" )
 CMD=${ARGS[0]}
 if [[ ! " ${VALID_CMDS[*]} " =~ " ${CMD} "  ]]; then
-    printf "${ERROR}The command ${YELLOW}${CMD}${NORMAL} does not exist.\n"
+    printf "${ERROR}The command ${YELLOW}${CMD}${RESET} does not exist.\n"
     print_usage
     exit
 fi
@@ -89,9 +88,9 @@ ARGS_LIST=${ARGS[@]:1}
 
 # Print to terminal what is being called
 if [ ${#ARGS_LIST[@]} == 1 ] && [ "${ARGS_LIST[0]}" == "" ]; then
-    printf "${INFO}Calling '${YELLOW}${SCRIPT_DIR}/scripts/${CMD}${NORMAL}' with no arguments\n"
+    printf "${INFO}Calling '${YELLOW}${SCRIPT_DIR}/scripts/${CMD}${RESET}' with no arguments\n\n"
 else
-    printf "${INFO}Calling '${YELLOW}${SCRIPT_DIR}/scripts/${CMD}${NORMAL}' with arguments '${YELLOW}${ARGS[@]:1}${NORMAL}'\n"
+    printf "${INFO}Calling '${YELLOW}${SCRIPT_DIR}/scripts/${CMD}${RESET}' with arguments '${YELLOW}${ARGS[@]:1}${RESET}'\n\n"
 fi
 
 # Run tool

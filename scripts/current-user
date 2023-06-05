@@ -54,7 +54,7 @@ if [ ${TESTING} == true ]; then
     # Set variables
     CURRENT_CONFIG=${TEST_DIR}/${CURRENT_CONFIG}
     
-    printf "${YELLOW}Running script in test mode. Creating test file structure.${NORMAL}\n\n"
+    printf "${YELLOW}Running script in test mode. Creating test file structure.${RESET}\n\n"
     _create_test_folder_structure ${TEST_DIR}
 fi
 
