@@ -7,7 +7,10 @@
 ### VARIABLES ###
 #################
 
-SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+# The name of this script, and the directory where it is located
+SCRIPT_NAME="$(basename $(readlink -f $0))"
+SCRIPT_DIR="$(dirname $(readlink -f $0))"
+
 
 #################
 ### FUNCTIONS ###
@@ -17,11 +20,12 @@ function print_usage(){
     printf "\nPrints the username of the current configuration used.
     
 Usage:
-    current -T -f
+    current [-f|--file-loc] [-h|--help] [-T|--testing] 
 
 Input Arguments:
-    -f      print the file location of the current configuration file too.
-    -T      Runs the script in a test mode by prepending all paths and setting the current user to test.
+    -f|--file-loc   Print the file location of the current configuration file too.
+    -h|--help       Prints this help menu.
+    -T|--testing    Runs the script in a test mode by prepending all paths and setting the current user to test.
 
 "
 }
@@ -37,12 +41,20 @@ source ${SCRIPT_DIR}/common
 # Parse Arguments
 TESTING=false
 PRINT_CONFIG_FILE_LOC=false
-while getopts fTh OPT; do
-    case "${OPT}" in
-        f) PRINT_CONFIG_FILE_LOC=true ;;
-        T) TESTING=true ;;
-        h) print_usage; exit ;;
-        ?) print_usage; exit ;;
+PARSED_ARGS=$(getopt -a -n ${SCRIPT_NAME} -o 'fT' --long 'file-loc,testing' -- "$@")
+eval set -- "${PARSED_ARGS}"
+while true; do
+    case "$1" in 
+        -f|--file-loc) PRINT_CONFIG_FILE_LOC=true; shift ;;
+        -h|--help) print_usage; exit 0 ;;
+        -T|--testing) TESTING=true; shift 1 ;;
+        # -- indicates end of arguments, break while loop
+        --) shift; break ;;
+        # invalid option was passed, print usage
+        *)
+        printf "${ERROR}Unrecognized option '$1'\n" 
+        print_usage 
+        exit 1 ;;    
     esac
 done
 

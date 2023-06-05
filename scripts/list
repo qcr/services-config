@@ -7,7 +7,9 @@
 ### VARIABLES ###
 #################
 
-SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+# The name of this script, and the directory where it is located
+SCRIPT_NAME="$(basename $(readlink -f $0))"
+SCRIPT_DIR="$(dirname $(readlink -f $0))"
 
 #################
 ### FUNCTIONS ###
@@ -17,13 +19,14 @@ function print_usage(){
     printf "\nLists the common and user specific QCR ROS services for the given user, whether they are enabled/disabled, and their status.
     
 Usage:
-    list -u <service_user> -i -a -d
+    list [-h|--help] [-i|--ignore-qcr] [-a|--list-all] [-d|--list-disabled] [-u|--user <user>]
 
 Input Arguments:
-    -u <user>   The user services to list. Defaults to the current user.
-    -i          Ignore the common QCR services.
-    -a          List all system services.
-    -d          List disabled services. 
+    -a|--list-all       List all system services.
+    -d|--list-disabled  List disabled services. 
+    -i|--ignore-qcr     Ignore the common QCR services.
+    -h|--help           Show this help menu.
+    -u|--user <user>    The user services to list. Defaults to the current user.
 
 Examples:
     List all generic and user sepcific services for the current user: ./list
@@ -38,23 +41,36 @@ Examples:
 ### MAIN ###
 ############
 
+# Set shell options, enter help set in terminal for definitions
+set -o pipefail
+
 # Source common components
 source ${SCRIPT_DIR}/common
 
+
 # Parse Arguments
-IGN_COMMON_ROS_SRVS=false
+IGN_QCR_SRVS=false
 LIST_ALL_SRVS=false
 LIST_DISABLED_SRVS=false
-while getopts u:iadh OPT; do
-    case "${OPT}" in
-        u) SERVICE_USER=${OPTARG} ;;
-        i) IGN_COMMON_ROS_SRVS=true ;;
-        a) LIST_ALL_SRVS=true ;;
-        d) LIST_DISABLED_SRVS=true ;;
-        h) print_usage; exit ;;
-        ?) print_usage; exit ;;
+PARSED_ARGS=$(getopt -a -n ${SCRIPT_NAME} -o 'adihu:' --long 'list-all,list-disabled,ignore-qcr,help,user:' -- "$@")
+eval set -- "${PARSED_ARGS}"
+while true; do
+    case "$1" in 
+        -a|--list-all) LIST_ALL_SRVS=true; shift ;;
+        -d|--list-disabled) LIST_DISABLED_SRVS=true; shift ;;
+        -i|--ignore-qcr) IGN_QCR_SRVS=true; shift ;;
+        -h|--help) print_usage; exit 0 ;;
+        -u|--user) SERVICE_USER=$2; shift 2 ;;
+        # -- indicates end of arguments, break while loop
+        --) shift; break ;;
+        # invalid option was passed, print usage
+        *)
+        printf "${ERROR}Unrecognized option '$1'\n" 
+        print_usage 
+        exit 1 ;;    
     esac
 done
+
 
 # Get filenames of services to list
 if [ ${LIST_ALL_SRVS} == true ]; then
@@ -66,7 +82,7 @@ else
     
     # Prepend common QCR ROS services to array if required
     COMMON_ROS_SRVS=("${SERVICE_PATH}/ros.service" "${SERVICE_PATH}/roscore.service" "${SERVICE_PATH}/ros-watchdog.service" "${SERVICE_PATH}/robot-bringup.service" "${SERVICE_PATH}/qut-iaclient.service")
-    if [ ${IGN_COMMON_ROS_SRVS} == false ]; then
+    if [ ${IGN_QCR_SRVS} == false ]; then
         SERVICE_FILES=( "${COMMON_ROS_SRVS[@]}" "${SERVICE_FILES[@]}" )
     fi
 fi

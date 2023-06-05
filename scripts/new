@@ -7,7 +7,10 @@
 ### VARIABLES ###
 #################
 
-SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+# The name of this script, and the directory where it is located
+SCRIPT_NAME="$(basename $(readlink -f $0))"
+SCRIPT_DIR="$(dirname $(readlink -f $0))"
+
 
 #################
 ### FUNCTIONS ###
@@ -17,12 +20,13 @@ function print_usage(){
     printf "\nCopies the default service configuration to the current user workspace.
     
 Usage:
-    new -T -f <config_file> -d <default_config_file>
+    new [-c|--config <file>] [-d|--default <cile>] [-h|--help] [-T|--testing]
 
 Input Arguments:
-    -f <config_file>            The location where the new config file is to be stored. Defaults to /home/<current-user>/.qcr/ros-service-config.yml
-    -d <default_config_file>    The location to where the default config file. Defaults to /etc/qcr/ros-service-config_default.yml
-    -T                          Runs the script in a test mode by prepending all paths and setting the current user to test.
+    -c|--config  <file>     The location where the new config file is to be stored. Defaults to /home/<current-user>/.qcr/ros-service-config.yml
+    -d|--default <file>     The location to where the default config file. Defaults to /etc/qcr/ros-service-config_default.yml
+    -h|--help               Shows this help menu.
+    -T|--testing            Runs the script in a test mode by prepending all paths and setting the current user to test.
 "
 }
 
@@ -31,19 +35,29 @@ Input Arguments:
 ### MAIN ### 
 ############
 
+# Set shell options, enter help set in terminal for definitions
+set -o pipefail
+
 # Source common components
 source ${SCRIPT_DIR}/common
 
 # Parse Arguments
 TESTING=false
-
-while getopts f:dTh OPT; do
-    case "${OPT}" in
-        f) CONFIG_FILE=${OPTARG} ;;
-        d) DEFAULT_CONFIG_FILE=${OPTARG} ;;
-        T) TESTING=true ;;
-        h) print_usage; exit ;;
-        ?) print_usage; exit ;;
+PARSED_ARGS=$(getopt -a -n ${SCRIPT_NAME} -o 'c:d:hT' --long 'default:,config:,help,testing' -- "$@")
+eval set -- "${PARSED_ARGS}"
+while true; do
+    case "$1" in 
+        -c|--config) CONFIG_FILE=$2; shift 2 ;;
+        -d|--default) DEFAULT_CONFIG_FILE=$2; shift 2 ;;
+        -h|--help) print_usage; exit 0 ;;
+        -T|--testing) TESTING=true; shift 1 ;;
+        # -- indicates end of arguments, break while loop
+        --) shift; break ;;
+        # invalid option was passed, print usage
+        *)
+        printf "${ERROR}Unrecognized option '$1'\n" 
+        print_usage 
+        exit 1 ;;    
     esac
 done
 

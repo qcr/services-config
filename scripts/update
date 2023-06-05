@@ -7,7 +7,10 @@
 ### VARIABLES ###
 #################
 
-SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+# The name of this script, and the directory where it is located
+SCRIPT_NAME="$(basename $(readlink -f $0))"
+SCRIPT_DIR="$(dirname $(readlink -f $0))"
+
 
 
 #################
@@ -19,16 +22,17 @@ function print_usage(){
     whenever a services configuration file is updated.
     
 Usage:
-    update -T -c <command_file> -f <config_file> -s <config_file_symlink> -p <service_path> -u <service_user>
+    update [-C|--command <file>] [-c|--config <file>] [-h|--help] [-p|--path <path>] [-s|--symlink <file>] [-T|--testing] [-u|--user <user>]
 
 Input Arguments:
-    -c <command_file>           The file where generated commands should be stored. Defaults to /tmp/ros-service-commands
-    -f <config_file>            The config file to use for service configuration. Defaults to /home/<service_user>/.qcr/ros-service-config.yml. Providing this argument will set the config file path irrespective of the argument provided as the service_user.
-    -s <config_file_symlink>    The location where a symlink is created to store the currently used configuration file. Defaults to /etc/qcr/ros-service-config.yml
-    -p <service_path>           The path to where systemd service files are stored. Defaults to /etc/systemd/system
-    -u <service_user>           The username of the configuration file to be used. The username will also be added to each generated service. Defaults to the current user.
-    -T                          Runs the script in a test mode by prepending all paths and setting the current user to test. No changes to the system services will actually occur.
-
+    -C|--command  <file>    The file where generated commands should be stored. Defaults to /tmp/ros-service-commands
+    -c|--config   <file>    The config file to use for service configuration. Defaults to /home/<service_user>/.qcr/ros-service-config.yml. Providing this argument will set the config file path irrespective of the argument provided as the service_user.
+    -h|--help               Shows this help menu.
+    -p|--path     <path>    The path to where systemd service files are stored. Defaults to /etc/systemd/system
+    -s|--symlink  <file>    The location where a symlink is created to store the currently used configuration file. Defaults to /etc/qcr/ros-service-config.yml
+    -T|--testing            Runs the script in a test mode by prepending all paths and setting the current user to test. No changes to the system services will actually occur.
+    -u|--user     <user>    The username of the configuration file to be used. The username will also be added to each generated service. Defaults to the current user.
+    
 Example Usage:
     Use your service configuration: ./update
     Use the qcr user's service configuration: ./update -u qcr
@@ -57,17 +61,24 @@ source ${SCRIPT_DIR}/common
 # Parse Arguments
 TESTING=false
 CONFIG_FILE_PROVIDED=false
-
-while getopts c:f:S:P:p:u:Th OPT; do
-    case "${OPT}" in
-        c) COMMAND_FILE=${OPTARG} ;;
-        f) CONFIG_FILE=${OPTARG}; CONFIG_FILE_PROVIDED=true ;;
-        s) CONFIG_FILE_SYMLINK=${OPTARG} ;;
-        p) SERVICE_PATH=${OPTARG} ;;
-        u) SERVICE_USER=${OPTARG} ;;
-        T) TESTING=true ;;
-        h) print_usage; exit ;;
-        ?) print_usage; exit ;;
+PARSED_ARGS=$(getopt -a -n ${SCRIPT_NAME} -o 'c:d:hT' --long 'default:,config:,help,testing' -- "$@")
+eval set -- "${PARSED_ARGS}"
+while true; do
+    case "$1" in 
+        -C|--command) COMMAND_FILE=$2; shift 1 ;;
+        -c|--config) CONFIG_FILE=$2; CONFIG_FILE_PROVIDED=true; shift 2 ;;
+        -h|--help) print_usage; exit 0 ;;
+        -p|--path) SERVICE_PATH=$2; shift 2 ;;
+        -s|--symlink) CONFIG_FILE_SYMLINK=$2; shift 2 ;;
+        -T|--testing) TESTING=true; shift 1 ;;
+        -u|--user) SERVICE_USER=$2; shift 2 ;;
+        # -- indicates end of arguments, break while loop
+        --) shift; break ;;
+        # invalid option was passed, print usage
+        *)
+        printf "${ERROR}Unrecognized option '$1'\n" 
+        print_usage 
+        exit 1 ;;    
     esac
 done
 
