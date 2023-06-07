@@ -72,7 +72,7 @@ fi
 
 # Check if file exists
 if [ ! -e ${CURRENT_CONFIG} ]; then
-    echo "${WARNING} User Not Set"
+    printf "${WARN}User Not Set\n"
     exit 0
 fi
 

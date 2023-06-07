@@ -11,6 +11,8 @@
 SCRIPT_NAME="$(basename $(readlink -f $0))"
 SCRIPT_DIR="$(dirname $(readlink -f $0))"
 
+# EXAMPLE DEFAULT CONFIG
+EXAMPLE_DEFAULT_CONFIG="$(dirname ${SCRIPT_DIR})/service-config_default.yml"
 
 #################
 ### FUNCTIONS ###
@@ -76,10 +78,10 @@ fi
 
 
 # Check directory exists
-config_dir=$(dirname ${CONFIG_FILE})
-if [ ! -d ${config_dir} ]; then
-    echo "${INFO} Creating directory ${config_dir}"
-    mkdir -p "${config_dir}"
+CONFIG_DIR=$(dirname ${CONFIG_FILE})
+if [ ! -d ${CONFIG_DIR} ]; then
+    echo "${INFO} Creating directory ${CONFIG_DIR}"
+    mkdir -p "${CONFIG_DIR}"
 fi
 
 # Check if config already exists
@@ -93,28 +95,19 @@ fi
 if [ ! -e ${DEFAULT_CONFIG_FILE} ]; then
     printf "${INFO} No Default Configuration Exists, creating empty default configuration.\n"
 
-    touch ${DEFAULT_CONFIG_FILE}
-    echo -e "# Example structure for services configuration file
-- name: service-1
-  description: Service 1 Description
-  catkin_ws: /opt/ros/noetic/setup.bash
-  parent: ros-watchdog.service
-  command: echo Service 1 Hook
-  enabled: True
-  restart: True
-  restart_after: 5
+    # Make sure directory exists
+    DEFAULT_CONFIG_DIR="$(dirname ${DEFAULT_CONFIG_FILE})"
+    if [ ! -d ${DEFAULT_CONFIG_DIR} ]; then
+        echo "${INFO} Creating directory ${DEFAULT_CONFIG_DIR}"
+        mkdir -p "${DEFAULT_CONFIG_DIR}"
+    fi
 
-- name: service-2
-  description: Service 1 Description
-  parent: ros-watchdog.service
-  command: echo Service 2 Hook
-  enabled: False
-
-
-" > ${DEFAULT_CONFIG_FILE}
+    # Copy example to default
+    sudo cp ${EXAMPLE_DEFAULT_CONFIG} ${DEFAULT_CONFIG_FILE}
     
 fi
 
+# Copy default to user
 cp ${DEFAULT_CONFIG_FILE} ${CONFIG_FILE}
 printf "${INFO} Copied Default Configuration - User configuration file at ${CONFIG_FILE}\n"
 printf  "${INFO} Make changes to this file and then run update to set this as the default service configuration.\n"
