@@ -93,7 +93,7 @@ fi
 
 # Check if default exists
 if [ ! -e ${DEFAULT_CONFIG_FILE} ]; then
-    printf "${INFO} No Default Configuration Exists, creating empty default configuration.\n"
+    printf "${INFO} No Default Configuration Exists, creating default configuration by copying ${EXAMPLE_DEFAULT_CONFIG}.\n"
 
     # Make sure directory exists
     DEFAULT_CONFIG_DIR="$(dirname ${DEFAULT_CONFIG_FILE})"

@@ -8,16 +8,18 @@ Use the tool by calling *services* with the desired command and arguments.
 
 Usage: `services <command> <arguments>`
 
-- **list**: lists all the ROS services, whether they are enabled/disabled, and their status.
+Enter: `services --help` to get a list of up-to-date commands. However, commands include:
+
+- **list**: lists all the services, whether they are enabled/disabled, and their status.
 - **update**: sets the services to start on boot based on the user's service configuration.
 - **new**: creates a new configuration file for the user using a default as the base.
-- **current**: prints the username of the current configuration used.
+- **current-user**: prints the username of the current configuration used.
 
 ## User Process
 
 Your custom start-up process revolves around a services configuration file. This is a YAML file and its default location is `/home/<your-username>/.qcr/services-config.yml`. The process to create a custom start-up behaviour is:
 
-1. Run `services new` - this will generate a new service configuration file in the default location by copying the system's default start-up configuration (created by the system administrator).
+1. Run `services new` - this will generate a new service configuration file in the default location by copying the system's default start-up configuration (created by the system administrator). If no system default exists it will be created by copying [service-config_default.yml](/service-config_default.yml) to the system default location.
 2. Make the desired changes to your newly created service config file. 
 3. Once you're happy run `service update` - this will establish create and update system service files, and enable/disable all appropriate services.
 
@@ -28,7 +30,7 @@ We recommend you utilise this tool in combination with the [QCR ROS-Daemons](htt
 - You will need to run `service update` if you make any changes to your service config file.
 - You will need to run `service update` to change the start-up behaviour from a different user. In other words, restarting the computer and logging in does NOT automatically change the start-up behaviour to your configuration. 
 
-## Configuration File Keys
+### Configuration File Keys
 
 The configuration file is a YAML file. The keys and their meanings are as follows:
 
@@ -85,6 +87,8 @@ WantedBy=ros-sensors.service
 
 ## Notes for Developers
 
+The tool and commands have a testing flag for development. Use `--help` on each command to get more information.
+
 ### Variables & Arguments
 
 The following variables and arguments are present throughout the files. The meaning of each is as follows:
@@ -97,7 +101,6 @@ The following variables and arguments are present throughout the files. The mean
     - Default: `/etc/qcr/ros-service-config.yml`
 - **CURRENT_CONFIG** - a text file storing the current user and config file location. Changing the default is useful for testing.
     - Default: `/opt/qcr/current-service-config-values`
-CURRENT_CONFIG="/etc/qcr/current-service-config-values"
 - **DEFAULT_CONFIG_FILE** - the location of the default config file. Changing the default is useful for testing.
     - Default: `/etc/qcr/ros-service-config_default.yml`
 - **SERVICE_PATH** - contains the path to where systemd service files are stored. Changing the default is useful for testing.
