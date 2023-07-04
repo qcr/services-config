@@ -1,40 +1,49 @@
+# The top most ROS Catkin workspace to source. 
+# Will be sourced by each service before running its command.
+catkin_ws: /opt/ros/noetic/setup.bash
+
+# Append the following to the Python Path
+# Will be appended in each service before its command.
+append_to_pythonpath: 
+
+# Services
+services: 
+
 ######################################
 ### ROS-Sensors Dependent Services ###
 ######################################
 # Example
 - name: ros-sensor-example
   description: Example Services
-  parent: ros-sensors.service
-  catkin_ws: /home/qcr/qcr_agilex_payload_ws/devel/setup.bash
+  parent_service: ros-sensors.service
   command: echo Started Example ROS-Sensors Dependent Service
-  enabled: True
-  restart: True
-  restart_after: 5
+  run_on_boot: True
+  restart_on_failure: True
+  restart_after_n_seconds: 5
 
-  
+
 ####################################
 ### ROS-Robot Dependent Services ###
 ####################################
-# Example
+# Example 
 - name: ros-robot-example
   description: Example Services
-  parent: ros-robot.service
-  catkin_ws: /home/qcr/qcr_agilex_payload_ws/devel/setup.bash
-  command: echo Started Example ROS-Robot Dependent Service
-  enabled: True
-  restart: True
-  restart_after: 5
+  parent_service: ros-robot.service
+  command: echo Started Example ROS-Robot Dependent Service,
+  run_on_boot: True
+  restart_on_failure: True
+  restart_after_n_seconds: 5
 
-  
+
 ######################################
 ### ROS-Project Dependent Services ###
 ######################################
 # Example
 - name: ros-project-example
   description: Example Services
-  parent: ros-project.service
-  catkin_ws: /home/qcr/qcr_agilex_payload_ws/devel/setup.bash
+  parent_service: ros-project.service
   command: echo Started Example ROS-Project Dependent Service
-  enabled: True
-  restart: True
-  restart_after: 5
+  run_on_boot: True
+  restart_on_failure: True
+  restart_after_n_seconds: 5
+

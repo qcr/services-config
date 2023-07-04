@@ -23,7 +23,7 @@ Usage:
     current [-f|--file-loc] [-h|--help] [-T|--testing] 
 
 Input Arguments:
-    -f|--file-loc   Print the file location of the current configuration file too.
+    -f|--file-loc   Prints the file location of the configuration file copied to be used for the current service config, along with the current user.
     -h|--help       Prints this help menu.
     -T|--testing    Runs the script in a test mode by prepending all paths and setting the current user to test.
 
@@ -41,7 +41,7 @@ source ${SCRIPT_DIR}/common
 # Parse Arguments
 TESTING=false
 PRINT_CONFIG_FILE_LOC=false
-PARSED_ARGS=$(getopt -a -n ${SCRIPT_NAME} -o 'fT' --long 'file-loc,testing' -- "$@")
+PARSED_ARGS=$(getopt -a -n ${SCRIPT_NAME} -o 'fhT' --long 'file-loc,help,testing' -- "$@")
 eval set -- "${PARSED_ARGS}"
 while true; do
     case "$1" in 
@@ -64,14 +64,14 @@ if [ ${TESTING} == true ]; then
     TEST_DIR=$(_get_test_dir)
 
     # Set variables
-    CURRENT_CONFIG=${TEST_DIR}/${CURRENT_CONFIG}
+    CURRENT_CONFIG_DETAILS=${TEST_DIR}/${CURRENT_CONFIG_DETAILS}
     
     printf "${YELLOW}Running script in test mode. Creating test file structure.${RESET}\n\n"
     _create_test_folder_structure ${TEST_DIR}
 fi
 
 # Check if file exists
-if [ ! -e ${CURRENT_CONFIG} ]; then
+if [ ! -e ${CURRENT_CONFIG_DETAILS} ]; then
     printf "${WARN}User Not Set\n"
     exit 0
 fi
@@ -88,5 +88,5 @@ while read -r line; do
     fi
     count+=1
 
-done < ${CURRENT_CONFIG}
+done < ${CURRENT_CONFIG_DETAILS}
 

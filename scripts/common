@@ -19,16 +19,16 @@ COMMAND_FILE="/tmp/service-commands"
 # Default: /home/<current-user>/.qcr/ros-service-config.yml
 CONFIG_FILE="/home/$USER/.qcr/service-config.yml"
 
-# CONFIG_FILE_SYMLINK - the location of the symbolic link. The symbolic link
-# points to the current configuration file in use. Changing the default is 
+# CURRENT_CONFIG_FILE - the location of the current config file used. User config files
+# are copied to this located. Changing the default is 
 # useful for testing.
 # Default: /etc/qcr/ros-service-config.yml
-CONFIG_FILE_SYMLINK="/etc/qcr/service-config.yml"
+CURRENT_CONFIG_FILE="/etc/qcr/service-config.yml"
 
-# CURRENT_CONFIG - a text file storing the current user and config file location.
-# Changing the default is useful for testing.
+# CURRENT_CONFIG_DETAILS - a text file storing the current user and original location
+# of the user's config file. Changing the default is useful for testing.
 # Default: /etc/qcr/current-service-config-values
-CURRENT_CONFIG="/etc/qcr/current-service-config-values"
+CURRENT_CONFIG_DETAILS="/etc/qcr/current-service-config-values"
 
 # DEFAULT_CONFIG_FILE - the location of the default config file. Changing the default
 # is useful for testing.

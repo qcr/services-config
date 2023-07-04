@@ -91,22 +91,7 @@ The tool and commands have a testing flag for development. Use `--help` on each 
 
 ### Variables & Arguments
 
-The following variables and arguments are present throughout the files. The meaning of each is as follows:
-
-- **COMMANDS_FILE** - full path to where the commands required to be run, based on a configuration file, are stored. Commands are generated via Python as it is much easier to handle YAML files within Python. Changing the default is  useful for testing.
-    - Default: /tmp/ros-service-commands
-- **CONFIG_FILE** - full path to a configuration file. The default path is based on the current user. Changing the default is  useful for testing.
-    - Default: `/home/<current-user>/.qcr/ros-service-config.yml`
-- **CONFIG_FILE_SYMLINK** - full path to the location of the symbolic link. The symbolic link points to the current configuration file in use. Changing the default is  useful for testing.
-    - Default: `/etc/qcr/ros-service-config.yml`
-- **CURRENT_CONFIG** - a text file storing the current user and config file location. Changing the default is useful for testing.
-    - Default: `/opt/qcr/current-service-config-values`
-- **DEFAULT_CONFIG_FILE** - the location of the default config file. Changing the default is useful for testing.
-    - Default: `/etc/qcr/ros-service-config_default.yml`
-- **SERVICE_PATH** - contains the path to where systemd service files are stored. Changing the default is useful for testing.
-    - Default: `/etc/systemd/system/`
-- **SERVICE_USER** - contains a string appended to the generated service files prior to the '.service' file extension.
-    - Default: `<current-user>`
+See [scripts/common](scripts/common) for variables and their meaning.
 
 
 ### Implementation
@@ -114,7 +99,7 @@ The following variables and arguments are present throughout the files. The mean
 - Configuration files are YAML
 - Default configuration file is stored in `/etc/qcr/ros-services-config_default.yml`
 - User configuration files are stored in `/home/<USER>/qcr/ros-services-config.yml`
-- Current configuration file used is set using a symlink `/etc/qcr/ros-services-config.yml`
+- Current configuration file used is set by copying a user's config to `/etc/qcr/ros-services-config.yml`
 - Process when update is run:
     - Disables current user services (yaml > python > bash)
     - Sets new configuration file (bash)
