@@ -68,7 +68,7 @@ ERROR="${RED}[ERROR]${RESET} "
 
 function _create_test_folder_structure() {
 
-    mkdir -p "${1}/home/test/.qcr"
+    mkdir -p "${1}/home/"
     mkdir -p "${1}/etc/qcr/"
     mkdir -p "${1}/etc/systemd/system/"
     mkdir -p "${1}/tmp/"

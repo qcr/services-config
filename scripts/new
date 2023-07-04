@@ -22,13 +22,14 @@ function print_usage(){
     printf "\nCopies the default service configuration to the current user workspace.
     
 Usage:
-    new [-c|--config <file>] [-d|--default <cile>] [-h|--help] [-T|--testing]
+    new [-c|--config <file>] [-d|--default <file>] [-h|--help] [-T|--testing] [-u|--user <service user>]
 
 Input Arguments:
     -c|--config  <file>     The location where the new config file is to be stored. Defaults to /home/<current-user>/.qcr/ros-service-config.yml
     -d|--default <file>     The location to where the default config file. Defaults to /etc/qcr/ros-service-config_default.yml
     -h|--help               Shows this help menu.
     -T|--testing            Runs the script in a test mode by prepending all paths and setting the current user to test.
+    -u|--user     <user>    The username of the configuration file to be used. The username will also be added to each generated service. Defaults to the current user.
 "
 }
 
@@ -45,7 +46,7 @@ source ${SCRIPT_DIR}/common
 
 # Parse Arguments
 TESTING=false
-PARSED_ARGS=$(getopt -a -n ${SCRIPT_NAME} -o 'c:d:hT' --long 'default:,config:,help,testing' -- "$@")
+PARSED_ARGS=$(getopt -a -n ${SCRIPT_NAME} -o 'c:d:hTu:' --long 'default:,config:,help,testing,user' -- "$@")
 eval set -- "${PARSED_ARGS}"
 while true; do
     case "$1" in 
@@ -53,6 +54,7 @@ while true; do
         -d|--default) DEFAULT_CONFIG_FILE=$2; shift 2 ;;
         -h|--help) print_usage; exit 0 ;;
         -T|--testing) TESTING=true; shift 1 ;;
+        -u|--user) SERVICE_USER=$2; shift 2 ;;
         # -- indicates end of arguments, break while loop
         --) shift; break ;;
         # invalid option was passed, print usage
@@ -63,13 +65,18 @@ while true; do
     esac
 done
 
+# Set service user to test if testing
+# if [ ${TESTING} == true ]; then
+#     SERVICE_USER="test"
+# fi
+
 # Testing - prepend paths and set user
 if [ ${TESTING} == true ]; then
     # Get path to testing directory
     TEST_DIR=$(_get_test_dir)
 
     # Set variables
-    CONFIG_FILE=${TEST_DIR}/home/test/.qcr/service-config.yml
+    CONFIG_FILE=${TEST_DIR}/home/${SERVICE_USER}/.qcr/service-config.yml
     DEFAULT_CONFIG_FILE=${TEST_DIR}/${DEFAULT_CONFIG_FILE}
 
     printf "${YELLOW}Running script in test mode. Creating test file structure.${RESET}\n\n"
@@ -80,7 +87,7 @@ fi
 # Check directory exists
 CONFIG_DIR=$(dirname ${CONFIG_FILE})
 if [ ! -d ${CONFIG_DIR} ]; then
-    echo "${INFO} Creating directory ${CONFIG_DIR}"
+    printf "${INFO} Creating directory ${CONFIG_DIR}\n"
     mkdir -p "${CONFIG_DIR}"
 fi
 

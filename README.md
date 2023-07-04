@@ -21,9 +21,9 @@ Your custom start-up process revolves around a services configuration file. This
 
 1. Run `services new` - this will generate a new service configuration file in the default location by copying the system's default start-up configuration (created by the system administrator). If no system default exists it will be created by copying [service-config_default.yml](/service-config_default.yml) to the system default location.
 2. Make the desired changes to your newly created service config file. 
-3. Once you're happy run `service update` - this will establish create and update system service files, and enable/disable all appropriate services.
+3. Once you're happy run `service update` - this will create and update system service files, and enable/disable all appropriate services.
 
-We recommend you utilise this tool in combination with the [QCR ROS-Daemons](https://github.com/qcr/ros-daemons) and set the parent to be one of the ROS meta services: *ros-sensors.service*; *ros-robot.service*; *ros-project.service*.
+We recommend you utilise this tool in combination with the [QCR ROS-Services](https://github.com/qcr/ros-services) and set the parent to be one of the ROS meta services: *ros-sensors.service*; *ros-robot.service*; *ros-project.service*.
 
 **Notes**:
 
@@ -109,7 +109,8 @@ See [scripts/common](scripts/common) for variables and their meaning.
 - User configuration files are stored in `/home/<USER>/.qcr/ros-services-config.yml`
 - Current configuration file used is set by copying a user's config to `/etc/qcr/ros-services-config.yml`
 - Process when update is run:
-    - Disables current user services (yaml > python > bash)
+    - Disables previous user services (yaml > python > bash)
+    - Deletes existing service files for the previous user
     - Sets new configuration file (bash)
-    - Generates any new service files (yaml > python > bash)
-    - Enables new user services (bash)
+    - Generates service files for the current user (yaml > python > bash)
+    - Enables current user services (bash)

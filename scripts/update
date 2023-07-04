@@ -61,7 +61,7 @@ source ${SCRIPT_DIR}/common
 # Parse Arguments
 TESTING=false
 CONFIG_FILE_PROVIDED=false
-PARSED_ARGS=$(getopt -a -n ${SCRIPT_NAME} -o 'c:d:hT' --long 'default:,config:,help,testing' -- "$@")
+PARSED_ARGS=$(getopt -a -n ${SCRIPT_NAME} -o 'c:d:hTu:' --long 'default:,config:,help,testing,user' -- "$@")
 eval set -- "${PARSED_ARGS}"
 while true; do
     case "$1" in 
@@ -83,9 +83,9 @@ while true; do
 done
 
 # Set service user to test if testing
-if [ ${TESTING} == true ]; then
-    SERVICE_USER="test"
-fi
+# if [ ${TESTING} == true ]; then
+#     SERVICE_USER="test"
+# fi
 
 # Create path to config file - based on config_file and service_user arguments
 if [ ${CONFIG_FILE_PROVIDED} == false ]; then
@@ -119,17 +119,20 @@ fi
 # Check to see if a current config file exists
 if [ -e ${CURRENT_CONFIG_FILE} ]; then
 
-    # Create list of commands to disable all services for current configuration
+    # Get previous user
+    PREV_USER=$(head -n 1 ${CURRENT_CONFIG_DETAILS})
+
+    # Create list of commands to disable all services for previous user
     printf "${INFO} Disabling current services.\n"
-    bash -c "python3 ${SCRIPT_DIR}/create_enable_services_list.py -D -c ${COMMAND_FILE} -f ${CURRENT_CONFIG_FILE} -u ${SERVICE_USER}"
+    bash -c "python3 ${SCRIPT_DIR}/create_enable_services_list.py -D -c ${COMMAND_FILE} -f ${CURRENT_CONFIG_FILE} -u ${PREV_USER}"
 
     # Run commands - if not testing
     if [ ${TESTING} == false ]; then
         _run_systemctl_commands $COMMAND_FILE
     fi
 
-    # Remove all service files for this user
-    SERVICE_FILES=${SERVICE_PATH}/*${SERVICE_USER}.service # service files for this user
+    # Remove all service files for previous user
+    SERVICE_FILES=${SERVICE_PATH}/*${PREV_USER}.service
     sudo rm ${SERVICE_FILES}
 
 fi
