@@ -35,8 +35,6 @@ We recommend you utilise this tool in combination with the [QCR ROS-Daemons](htt
 The configuration file is a YAML file. The keys and their meanings are as follows:
 
 ```yaml
-# The top most ROS Catkin workspace to source. 
-# Will be sourced by each service before running its command.
 catkin_ws: (String, Optional) set the catkin workspace to source prior to running each service's command value. Set to the top most catkin workspace required across all services. Defaults to None.
 
 append_to_pythonpath: (String, Optional) prepend a specified path(s) to the system's python path for each service. Defaults to None.
