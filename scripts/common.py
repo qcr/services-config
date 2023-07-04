@@ -42,7 +42,7 @@ def open_config(fpath: str) -> List:
     exit(1)
 
   # Get catkin_ws and append_to_pythonpath keys from data
-  catkin_ws = "/opt/ros/noetic/setup.bash"
+  catkin_ws = None
   if 'catkin_ws' in data.keys():
     catkin_ws = data['catkin_ws']
   
