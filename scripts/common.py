@@ -118,10 +118,10 @@ def write_service_file(services_path: str, service: dict, username: str):
     # Write Service Elements
     f.write('\n[Service]\n')
     f.write(cmd)
-    if 'restart' in service.keys() and service['restart'] == True:
+    if 'restart_on_failure' in service.keys() and service['restart_on_failure'] == True:
       f.write('Restart=always\n')
-      if 'restart_after' in service.keys():
-        f.write('RestartSec=%s\n'%(service['restart_after']))
+      if 'restart_after_n_seconds' in service.keys():
+        f.write('RestartSec=%s\n'%(service['restart_after_n_seconds']))
       else:
         f.write('RestartSec=5\n')
 
