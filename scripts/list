@@ -81,7 +81,7 @@ else
     SERVICE_FILES=${SERVICE_PATH}/*${SERVICE_USER}.service
     
     # Prepend common QCR ROS services to array if required
-    COMMON_ROS_SRVS=("${SERVICE_PATH}/ros.service" "${SERVICE_PATH}/roscore.service" "${SERVICE_PATH}/ros-watchdog.service" "${SERVICE_PATH}/robot-bringup.service" "${SERVICE_PATH}/qut-iaclient.service")
+    COMMON_ROS_SRVS=("${SERVICE_PATH}/ros.service" "${SERVICE_PATH}/roscore.service" "${SERVICE_PATH}/ros-watchdog.service" "${SERVICE_PATH}/ros-sensors.service" "${SERVICE_PATH}/ros-robot.service" "${SERVICE_PATH}/ros-project.service" "${SERVICE_PATH}/qut-iaclient.service")
     if [ ${IGN_QCR_SRVS} == false ]; then
         SERVICE_FILES=( "${COMMON_ROS_SRVS[@]}" "${SERVICE_FILES[@]}" )
     fi
