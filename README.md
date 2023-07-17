@@ -35,6 +35,8 @@ We recommend you utilise this tool in combination with the [QCR ROS-Services](ht
 The configuration file is a YAML file. The keys and their meanings are as follows:
 
 ```yaml
+source_env: (String, Optional) source a bash script containing environment variables or functions prior to running each service's command value. Defaults to None.
+
 catkin_ws: (String, Optional) set the catkin workspace to source prior to running each service's command value. Set to the top most catkin workspace required across all services. Defaults to None.
 
 append_to_pythonpath: (String, Optional) prepend a specified path(s) to the system's python path for each service. Defaults to None.
@@ -60,6 +62,8 @@ services: # A list of services
 The following configuration file:
 
 ```yaml
+source_env: /etc/qcr/qcr-env.bash
+
 catkin_ws: /home/qcr/qcr_agilex_payload_ws/devel/setup.bash
 
 append_to_pythonpath: /home/qcr/.local/lib/python3.8/site-packages
@@ -83,7 +87,7 @@ Requires=ros-sensors.service
 After=ros-sensors.service
 
 [Service]
-ExecStart=/bin/bash -c "export PYTHONPATH=/home/qcr/.local/lib/python3.8/site-packages:$PYTHONPATH && source /home/qcr/qcr_agilex_payload_ws/devel/setup.bash && roslaunch qcr_agilex_payload rs16.launch"
+ExecStart=/bin/bash -c "source /etc/qcr/qcr-env.bash && export PYTHONPATH=/home/qcr/.local/lib/python3.8/site-packages:$PYTHONPATH && source /home/qcr/qcr_agilex_payload_ws/devel/setup.bash && roslaunch qcr_agilex_payload rs16.launch"
 Restart=always
 RestartSec=5
 

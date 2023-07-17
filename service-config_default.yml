@@ -1,3 +1,7 @@
+# Source a particular environment or bash script
+# Applied to each service before running its command
+source_env: /etc/qcr/qcr-env.bash
+
 # The top most ROS Catkin workspace to source. 
 # Will be sourced by each service before running its command.
 catkin_ws: /opt/ros/noetic/setup.bash

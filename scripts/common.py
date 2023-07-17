@@ -41,7 +41,7 @@ def open_config(fpath: str) -> List:
     print("\n\033[0;31m[ERROR]\033[0m You are using an old configuration file version. Please update your configuration file to the latest version.")
     exit(1)
 
-  # Get catkin_ws and append_to_pythonpath keys from data
+  # Get catkin_ws, append_to_pythonpath, and source_env keys from data
   catkin_ws = None
   if 'catkin_ws' in data.keys():
     catkin_ws = data['catkin_ws']
@@ -50,11 +50,16 @@ def open_config(fpath: str) -> List:
   if 'append_to_pythonpath' in data.keys():
     append_pypath = data['append_to_pythonpath']
 
+  source_env = None
+  if 'source_env' in data.keys():
+    source_env = data['source_env']
+
   # Add catkin_ws and append_to_pythonpath to all services
   services = []
   for service in data['services']:
     service['catkin_ws'] = catkin_ws
     service['append_pypath'] = append_pypath
+    service['source_env'] = source_env
     services.append(service)
 
   # Return
@@ -91,9 +96,14 @@ def write_service_file(services_path: str, service: dict, username: str):
   service_name = get_service_name(service, username)
   with open(os.path.join(services_path, service_name + ".service"), 'w') as f:
 
-    # Append Python Path and Catkin Workspace to command if required
+    # Append Source Env, Python Path and Catkin Workspace to command if required
     cmd = ""
+    if 'source_env' in service.keys() and service['source_env'] != "" and service['source_env'] != None:
+      cmd += "source %s"%(service['source_env'])
+
     if 'append_pypath' in service.keys() and service['append_pypath'] != "" and service['append_pypath'] != None:
+      if cmd != "":
+        cmd += " && "
       cmd += "export PYTHONPATH=%s:$PYTHONPATH"%(service['append_pypath'])
 
     if 'catkin_ws' in service.keys() and service['catkin_ws'] != "" and service['catkin_ws'] != None:
