@@ -96,28 +96,20 @@ def write_service_file(services_path: str, service: dict, username: str):
   service_name = get_service_name(service, username)
   with open(os.path.join(services_path, service_name + ".service"), 'w') as f:
 
-    # Append Source Env, Python Path and Catkin Workspace to command if required
-    cmd = ""
+    # Create coimmand prefix string containing Source Env, Python Path and Catkin Workspace
+    cmd_prefix = ""
     if 'source_env' in service.keys() and service['source_env'] != "" and service['source_env'] != None:
-      cmd += "source %s"%(service['source_env'])
+      cmd_prefix += "source %s"%(service['source_env'])
 
     if 'append_pypath' in service.keys() and service['append_pypath'] != "" and service['append_pypath'] != None:
-      if cmd != "":
-        cmd += " && "
-      cmd += "export PYTHONPATH=%s:$PYTHONPATH"%(service['append_pypath'])
+      if cmd_prefix != "":
+        cmd_prefix += " && "
+      cmd_prefix += "export PYTHONPATH=%s:$PYTHONPATH"%(service['append_pypath'])
 
     if 'catkin_ws' in service.keys() and service['catkin_ws'] != "" and service['catkin_ws'] != None:
-      if cmd != "":
-        cmd += " && "
-      cmd += "source %s"%(service['catkin_ws'])
-
-    # Add command
-    if cmd != "":
-      cmd += " && "
-    cmd += "%s"%(service['command'])
-
-    # Wrap command in ExecStart
-    cmd = 'ExecStart=/bin/bash -c "%s"\n'%(cmd)
+      if cmd_prefix != "":
+        cmd_prefix += " && "
+      cmd_prefix += "source %s"%(service['catkin_ws'])
 
     # Write Unit Elements
     f.write('[Unit]\n')
@@ -127,7 +119,19 @@ def write_service_file(services_path: str, service: dict, username: str):
 
     # Write Service Elements
     f.write('\n[Service]\n')
-    f.write(cmd)
+    
+    # pre-command
+    if 'pre_command' in service.keys() and service['pre_command'] != "" and service['pre_command'] != None:
+      f.write(create_command_string("ExecStartPre", cmd_prefix, service['pre_command']))
+
+    # command
+    f.write(create_command_string("ExecStart", cmd_prefix, service['command']))
+    
+    # post-command
+    if 'post_command' in service.keys() and service['post_command'] != "" and service['post_command'] != None:
+      f.write(create_command_string("ExecStartPost", cmd_prefix, service['post_command']))
+
+    # restart
     if 'restart_on_failure' in service.keys() and service['restart_on_failure'] == True:
       f.write('Restart=always\n')
       if 'restart_after_n_seconds' in service.keys():
@@ -139,3 +143,10 @@ def write_service_file(services_path: str, service: dict, username: str):
     # Write Install Elements
     f.write('\n[Install]\n')
     f.write('WantedBy=%s\n'%(service['parent_service']))
+
+  
+def create_command_string(service_option: str, cmd_prefix: str, cmd: str) -> str:
+  if cmd_prefix != "":
+    return '%s=/bin/bash -c "%s && %s"\n'%(service_option, cmd_prefix, cmd)
+  else:
+    return '%s=/bin/bash -c "%s"\n'%(service_option, cmd)

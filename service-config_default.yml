@@ -20,7 +20,9 @@ services:
 - name: ros-sensor-example
   description: Example Services
   parent_service: ros-sensors.service
+  pre_command: echo Pre-Command
   command: echo Started Example ROS-Sensors Dependent Service
+  post_command: echo Post-Command
   run_on_boot: True
   restart_on_failure: True
   restart_after_n_seconds: 5
@@ -33,7 +35,9 @@ services:
 - name: ros-robot-example
   description: Example Services
   parent_service: ros-robot.service
-  command: echo Started Example ROS-Robot Dependent Service,
+  pre_command: echo Pre-Command
+  command: echo Started Example ROS-Robot Dependent Service
+  post_command: echo Post-Command
   run_on_boot: True
   restart_on_failure: True
   restart_after_n_seconds: 5
@@ -46,7 +50,9 @@ services:
 - name: ros-project-example
   description: Example Services
   parent_service: ros-project.service
+  pre_command: echo Pre-Command
   command: echo Started Example ROS-Project Dependent Service
+  post_command: echo Post-Command
   run_on_boot: True
   restart_on_failure: True
   restart_after_n_seconds: 5

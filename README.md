@@ -45,7 +45,9 @@ services: # A list of services
 - name: (String, Required) the name of the service.
   description: (String, Required) a service description.
   parent_service: (String, Required) the parent service this service depends on.
+  pre_command: (String, Optional) an optional shell command to run prior to executing the command.
   command: (String, Required) the shell command to be run.
+  post_command: (String, Optional) an optional shell command to run after executing the command.
   run_on_boot: (Boolean, Required) specifies if the service is run on boot. Defaults to True.
   restart_on_failure: (Boolean, Optional) specifies if the service is automatically restarted on failure. Defaults to True.
   restart_after_n_seconds: (Integer, Optional) the number of seconds to wait until attempting to restart the service. Defaults to 5.
