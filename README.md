@@ -21,9 +21,9 @@ Your custom start-up process revolves around a services configuration file. This
 
 1. Run `services new` - this will generate a new service configuration file in the default location by copying the system's default start-up configuration (created by the system administrator). If no system default exists it will be created by copying [service-config_default.yml](/service-config_default.yml) to the system default location.
 2. Make the desired changes to your newly created service config file. 
-3. Once you're happy run `service update` - this will establish create and update system service files, and enable/disable all appropriate services.
+3. Once you're happy run `service update` - this will create and update system service files, and enable/disable all appropriate services.
 
-We recommend you utilise this tool in combination with the [QCR ROS-Daemons](https://github.com/qcr/ros-daemons) and set the parent to be one of the ROS meta services: *ros-sensors.service*; *ros-robot.service*; *ros-project.service*.
+We recommend you utilise this tool in combination with the [QCR ROS-Services](https://github.com/qcr/ros-services) and set the parent to be one of the ROS meta services: *ros-sensors.service*; *ros-robot.service*; *ros-project.service*.
 
 **Notes**:
 
@@ -35,14 +35,22 @@ We recommend you utilise this tool in combination with the [QCR ROS-Daemons](htt
 The configuration file is a YAML file. The keys and their meanings are as follows:
 
 ```yaml
+source_env: (String, Optional) source a bash script containing environment variables or functions prior to running each service's command value. Defaults to None.
+
+catkin_ws: (String, Optional) set the catkin workspace to source prior to running each service's command value. Set to the top most catkin workspace required across all services. Defaults to None.
+
+append_to_pythonpath: (String, Optional) prepend a specified path(s) to the system's python path for each service. Defaults to None.
+
+services: # A list of services
 - name: (String, Required) the name of the service.
   description: (String, Required) a service description.
-  parent: (String, Required) the parent service this service depends on.
-  catkwin_ws: (String, Optional) a catkin_ws space to source prior to running the command. Defaults to no workspace.
+  parent_service: (String, Required) the parent service this service depends on.
+  pre_command: (String, Optional) an optional shell command to run prior to executing the command.
   command: (String, Required) the shell command to be run.
-  enabled: (Boolean, Required) specifies if the service is enabled. Defaults to True.
-  restart: (Boolean, Optional) specifies if the service is automatically restarted. Defaults to True.
-  retart_after: (Integer, Optional) the number of seconds to wait until attempting to restart the service. Defaults to 5.
+  post_command: (String, Optional) an optional shell command to run after executing the command.
+  run_on_boot: (Boolean, Required) specifies if the service is run on boot. Defaults to True.
+  restart_on_failure: (Boolean, Optional) specifies if the service is automatically restarted on failure. Defaults to True.
+  restart_after_n_seconds: (Integer, Optional) the number of seconds to wait until attempting to restart the service. Defaults to 5.
 ```
 
 **Notes**:
@@ -56,14 +64,20 @@ The configuration file is a YAML file. The keys and their meanings are as follow
 The following configuration file:
 
 ```yaml
+source_env: /etc/qcr/qcr-env.bash
+
+catkin_ws: /home/qcr/qcr_agilex_payload_ws/devel/setup.bash
+
+append_to_pythonpath: /home/qcr/.local/lib/python3.8/site-packages
+
+services:
 - name: ros-rs16-lidar
   description: Launch the RS16 LIDAR
-  parent: ros-sensors.service
-  catkwin_ws: /home/qcr/qcr_agilex_payload_ws/devel/setup.bash
+  parent_service: ros-sensors.service
   command: roslaunch qcr_agilex_payload rs16.launch
-  enabled: True
-  restart: True
-  retart_after: 5
+  run_on_boot: True
+  restart_on_failure: True
+  restart_after_n_seconds: 5
 ```
 
 Would result in the following service file with the name `ros-rs16-lidar-qcr` (assuming the username was *qcr*). The service would be enabled and brought up on start-up.
@@ -75,7 +89,7 @@ Requires=ros-sensors.service
 After=ros-sensors.service
 
 [Service]
-ExecStart=/bin/bash -c "source /home/qcr/qcr_agilex_payload_ws/devel/setup.bash && roslaunch qcr_agilex_payload rs16.launch"
+ExecStart=/bin/bash -c "source /etc/qcr/qcr-env.bash && export PYTHONPATH=/home/qcr/.local/lib/python3.8/site-packages:$PYTHONPATH && source /home/qcr/qcr_agilex_payload_ws/devel/setup.bash && roslaunch qcr_agilex_payload rs16.launch"
 Restart=always
 RestartSec=5
 
@@ -91,32 +105,18 @@ The tool and commands have a testing flag for development. Use `--help` on each 
 
 ### Variables & Arguments
 
-The following variables and arguments are present throughout the files. The meaning of each is as follows:
-
-- **COMMANDS_FILE** - full path to where the commands required to be run, based on a configuration file, are stored. Commands are generated via Python as it is much easier to handle YAML files within Python. Changing the default is  useful for testing.
-    - Default: /tmp/ros-service-commands
-- **CONFIG_FILE** - full path to a configuration file. The default path is based on the current user. Changing the default is  useful for testing.
-    - Default: `/home/<current-user>/.qcr/ros-service-config.yml`
-- **CONFIG_FILE_SYMLINK** - full path to the location of the symbolic link. The symbolic link points to the current configuration file in use. Changing the default is  useful for testing.
-    - Default: `/etc/qcr/ros-service-config.yml`
-- **CURRENT_CONFIG** - a text file storing the current user and config file location. Changing the default is useful for testing.
-    - Default: `/opt/qcr/current-service-config-values`
-- **DEFAULT_CONFIG_FILE** - the location of the default config file. Changing the default is useful for testing.
-    - Default: `/etc/qcr/ros-service-config_default.yml`
-- **SERVICE_PATH** - contains the path to where systemd service files are stored. Changing the default is useful for testing.
-    - Default: `/etc/systemd/system/`
-- **SERVICE_USER** - contains a string appended to the generated service files prior to the '.service' file extension.
-    - Default: `<current-user>`
+See [scripts/common](scripts/common) for variables and their meaning.
 
 
 ### Implementation
 
 - Configuration files are YAML
 - Default configuration file is stored in `/etc/qcr/ros-services-config_default.yml`
-- User configuration files are stored in `/home/<USER>/qcr/ros-services-config.yml`
-- Current configuration file used is set using a symlink `/etc/qcr/ros-services-config.yml`
+- User configuration files are stored in `/home/<USER>/.qcr/ros-services-config.yml`
+- Current configuration file used is set by copying a user's config to `/etc/qcr/ros-services-config.yml`
 - Process when update is run:
-    - Disables current user services (yaml > python > bash)
+    - Disables previous user services (yaml > python > bash)
+    - Deletes existing service files for the previous user
     - Sets new configuration file (bash)
-    - Generates any new service files (yaml > python > bash)
-    - Enables new user services (bash)
+    - Generates service files for the current user (yaml > python > bash)
+    - Enables current user services (bash)

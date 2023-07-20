@@ -39,7 +39,7 @@ if __name__ == "__main__":
             service_name = get_service_name(service, args.service_user)
 
             # Write values to file
-            if service['enabled'] == False or args.disable_all:
+            if service['run_on_boot'] == False or args.disable_all:
                 f.write('sudo systemctl stop %s\n'%(service_name))
                 f.write('sudo systemctl disable %s\n'%(service_name))
             else:
